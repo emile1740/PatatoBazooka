@@ -10,6 +10,9 @@ public class Result : MonoBehaviour {
 
     private const string RANKING_FILE_PATH = "Assets/Resources/ranking.csv";
 
+    [Header("共通用オブジェクト")]
+    public Common common;
+
     [Header("ランキングデータのプレハブ")]
     public GameObject rankingImagePrefab;
 
@@ -81,7 +84,6 @@ public class Result : MonoBehaviour {
         if (rankingNo != rankingData.Length) {
             WriteCsv();
             isInRanking = true;
-        } else {
         }
     }
 
@@ -170,19 +172,98 @@ public class Result : MonoBehaviour {
     /// ランキング順位の生成
     /// </summary>
     private void setRankingImage() {
-        for(int i = 0; i < rankingData.Length; i++) {
+
+        //１００件分のランキングデータを上方向に生成していく
+        for (int index = 0; index < rankingData.Length; index++) {
             var pos = rankingImagePrefab.transform.position;
-            pos.y += (rankingImagePrefab.GetComponent<RectTransform>().sizeDelta.y + rankingImage_AdjustPosition) * i;
+            pos.y += (rankingImagePrefab.GetComponent<RectTransform>().sizeDelta.y + rankingImage_AdjustPosition) * index;
             var rankingImageObj = (GameObject)Instantiate(rankingImagePrefab,pos,Quaternion.identity);
 
             rankingImageObj.transform.SetParent(rankingDataStore.transform,false);
-            rankingImageObj.name = rankingImagePrefab.name + "_" + i;
-        }
+            rankingImageObj.name = rankingImagePrefab.name + "_" + index;
 
-        //inRankingObject = rankingDataStore.transform.GetChild(rankingNo).gameObject;
+            //ランキング順位の表示
+            var rank = rankingData.Length - index;
+
+            //ランキングスコア画像の設定
+            setRankingScoreImage(rankingImageObj, rankingData[rank - 1]);
+
+            //ランキング順位画像の設定
+            setRankingCountImage(index, rankingImageObj ,rank);
+        }
 
         inRankingObjectRect = rankingDataStore.transform.GetChild(rankingNo).GetComponent<RectTransform>();
     }
+
+    /// <summary>
+    /// ランキングスコア画像の設定
+    /// </summary>
+    /// <param name="rankingImageObj"></param>
+    /// <param name="scoreTmp"></param>
+    private void setRankingScoreImage(GameObject rankingImageObj, int scoreTmp) {
+
+        var scoreImage = rankingImageObj.transform.FindChild("ScoreImage");
+
+        for (int i = scoreImage.childCount - 1; i >= 0; i--) {
+
+            changeCountImage(scoreImage.GetChild(i).GetComponent<Image>(), scoreTmp % 10);
+            scoreTmp /= 10;
+
+            //５桁分の数字の画像を変更する前に、計算するスコアが０になったら残りの画像を０にしてループを抜ける
+            if (scoreTmp == 0 && i > 0) {
+                while (i > 0) changeCountImage(scoreImage.GetChild(--i).GetComponent<Image>(), 0);
+                break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// ランキング順位画像の設定
+    /// </summary>
+    /// <param name="index"></param>
+    /// <param name="rankingImageObj"></param>
+    /// <param name="rank"></param>
+    private void setRankingCountImage(int index,GameObject rankingImageObj, int rank) {
+
+        var rankImage = rankingImageObj.transform.FindChild("RankImage");
+
+        ////１の位は必ず表示
+        viewRankingImage(rankImage.GetChild(2).GetComponent<Image>(), rank % 10);
+        rank /= 10;
+
+        //ランキング１００位の場合、１０の位、１００の位を表示
+        if ((rankingData.Length - 1) - index == (rankingData.Length - 1)) {
+            viewRankingImage(rankImage.GetChild(0).GetComponent<Image>(), 1);
+            viewRankingImage(rankImage.GetChild(1).GetComponent<Image>(), 0);
+        } else {
+            //ランキング１０位以上の場合、１０の位を表示
+            if ((rankingData.Length - 1) - index >= 10) {
+                viewRankingImage(rankImage.GetChild(1).GetComponent<Image>(), rank % 10);
+            }
+        }
+    }
+
+
+    /// <summary>
+    /// ランキング順位を表示
+    /// </summary>
+    /// <param name="image"></param>
+    /// <param name="countIndex"></param>
+    private void viewRankingImage(Image image, int countIndex) {
+        image.enabled = true;
+        changeCountImage(image, countIndex);
+    }
+
+    /// <summary>
+    /// 数字の画像を変更
+    /// </summary>
+    /// <param name="image"></param>
+    /// <param name="countIndex"></param>
+    private void changeCountImage(Image image, int countIndex) {
+        image.sprite = common.count[countIndex];
+    }
+
+
 
     /// <summary>
     /// ランキングデータのスクロール処理

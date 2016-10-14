@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class GameStateManager : MonoBehaviour {
@@ -9,23 +10,30 @@ public class GameStateManager : MonoBehaviour {
         Result,
         Ranking
     }
-    [SerializeField]
+    [SerializeField,Header("現在のシーン")]
     private Status nowState;
 
-    [SerializeField]
+    [SerializeField,Header("制限時間")]
     private float gameLimit;
     private float timer;
-    [SerializeField]
+
+    //スコアにする場合廃止
+    [SerializeField,Header("かぼちゃを倒した数")]
     private int pumpkinCount = 0;
 
-    [SerializeField]
+    [SerializeField,Header("スタートのためのゲームオブジェクト")]
     private GameObject startButton;
-    [SerializeField]
+    [SerializeField,Header("敵のプレハブ")]
     private GameObject enemy;
-    [SerializeField]
+    [SerializeField,Header("最初に出す敵の数")]
     private int pumpNum;
-    [SerializeField]
+    [SerializeField,Header("敵との距離")]
     private float radius = 3.0f;
+
+    [SerializeField, Header("ゲーム開始前のカウントダウンテキスト")]
+    private Text countDownText;
+    [SerializeField, Header("ゲームの残り時間表示用テキスト")]
+    private Text timeLimitText;
 	// Use this for initialization
 	void Start () {
 	
@@ -68,13 +76,58 @@ public class GameStateManager : MonoBehaviour {
         }
     }
 
+    //ゲーム開始前のカウントダウン
+    //引数の秒数カウント
+    IEnumerator GameStartCountDown(int cnt)
+    {
+        float oneSec = 0.0f;
+        string cntStr = cnt.ToString();
+        while (cnt > 0) 
+        {
+            oneSec += Time.deltaTime;
+            //点滅させるために1秒のうち0.5秒は表示しない
+            if (oneSec > 0.5f)
+            {
+                cntStr = "";
+            }
+            countDownText.text = cntStr;
+            if (oneSec > 1.0f)
+            {
+                oneSec = 0.0f;
+                cnt--;
+                cntStr = cnt.ToString();
+            }
+            yield return null;
+        }
+        //スタートを0.5秒表示した後ゲーム開始
+        countDownText.text = "START";
+        yield return new WaitForSeconds(0.5f);
+        countDownText.text = "";
+        nowState = Status.Game;
+        PumpkinGenerator();
+    }
+    //ゲーム終了後TIMEUPを表示
+    IEnumerator GameFinishText()
+    {
+        countDownText.text = "TIME UP";
+        //表示秒数をとりあえず1秒に
+        float waitTime = 1.0f;
+        yield return new WaitForSeconds(waitTime);
+        countDownText.text = "";
+        nowState = Status.Result;
+        startButton.SetActive(true);
+    }
+
     void GameUpdate()
     {
         timer -= Time.deltaTime;
         if (timer < 0.0f)
         {
             GoResult();
+            return;
         }
+        int cnt = (int)timer + 1;
+        timeLimitText.text = cnt.ToString();
     }
 
     public void KillPumpkin()
@@ -84,11 +137,13 @@ public class GameStateManager : MonoBehaviour {
 
     public void GoGame()
     {
-        nowState = Status.Game;
         timer = gameLimit;
         pumpkinCount = 0;
         startButton.SetActive(false);
-        PumpkinGenerator();
+        //開始前のカウントダウン
+        //引数はカウントダウンの時間
+        //数値は未定
+        StartCoroutine(GameStartCountDown(4));
     }
     public void GoTitle()
     {
@@ -97,8 +152,9 @@ public class GameStateManager : MonoBehaviour {
     }
     public void GoResult()
     {
-        nowState = Status.Result;
-        startButton.SetActive(true);
+        //出現しているかぼちゃを消す：予定
+
+        StartCoroutine(GameFinishText());
     }
     public void GoRanking()
     {

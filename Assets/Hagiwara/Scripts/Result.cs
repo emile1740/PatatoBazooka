@@ -35,10 +35,23 @@ public class Result : MonoBehaviour {
     [Header("今回のランキングNo")]
     public int rankingNo;
 
-    private RectTransform inRankingObjectRect;
+    [Header("ランキングに入った番号のオブジェクト")]
+    public RectTransform inRankingObjectRect;
 
     [Header("ランキングデータ")]
     public int[] rankingData = new int[100];
+
+    [Header("遷移ステータス")]
+    public State state;
+    public enum State {
+        NOT_IN_RANKING,
+        PLAYSE,
+        SCROLL,
+        END
+    }
+    [Header("スクロール処理が行われるまでの時間")]
+    public float startScrollTime;
+
 
     // Use this for initialization
     void Start() {
@@ -50,22 +63,45 @@ public class Result : MonoBehaviour {
 
         //とりあえずテストでスペースを押したら、ランキングデータの表示を行うようにしてある
         //本来はゲーム終了後何秒間か経過したら？になるのかな
-        if (Input.GetKeyDown(KeyCode.Space) && !isRankingSetting) {
+        if (state == State.NOT_IN_RANKING && Input.GetKeyDown(KeyCode.Space)) {
             setRankingData();
 
             setRankingImage();
-            isRankingSetting = true;
+            //isRankingSetting = true;
+            state = State.PLAYSE;
         }
 
+        stateProcessing();
 
-        if (isRankingSetting) {
-            //ランキングに入っていたら、ランキングデータのスクロール処理を行う
-            if (isInRanking) {
-                moveScrollRankingImage();
-            }else {
-                //ランキング外
-                
-            }
+    }
+
+    private void stateProcessing() {
+
+        switch (state) {
+
+            case State.NOT_IN_RANKING:
+                //ランキング内に入っていない場合
+                break;
+
+            case State.PLAYSE:
+                //ランキング内に入っている場合、ドラムロール音を鳴らす
+                AudioManager.Instance.PlaySE("se_drumroll");
+                state = State.SCROLL;
+                break;
+
+            case State.SCROLL:
+
+                //var isAudio = AudioManager.Instance.isPlayingSE();
+                startScrollTime -= Time.deltaTime;
+                if (startScrollTime < 0.0f) {
+
+                }else {
+                    //ドラムロール中はスクロール
+                    scrollRanking();
+                }
+
+                //state = State.END;
+                break;
         }
     }
 
@@ -191,8 +227,7 @@ public class Result : MonoBehaviour {
             //ランキング順位画像の設定
             setRankingCountImage(index, rankingImageObj ,rank);
         }
-
-        inRankingObjectRect = rankingDataStore.transform.GetChild(rankingNo).GetComponent<RectTransform>();
+        inRankingObjectRect = rankingDataStore.transform.GetChild((rankingData.Length-1) - rankingNo).GetComponent<RectTransform>();
     }
 
     /// <summary>
@@ -268,12 +303,51 @@ public class Result : MonoBehaviour {
     /// <summary>
     /// ランキングデータのスクロール処理
     /// </summary>
-    private void moveScrollRankingImage() {
+    private void scrollRanking() {
 
-        if (inRankingObjectRect.position.y > 0.0f) {
-            var storePos = storeRect.position;
-            storePos.y -= Time.deltaTime * scrollSpeed;
-            storeRect.position = storePos;
+        //Vector3.MoveTowards(inRankingObjectRect.position, targetPos,Time.deltaTime * scrollSpeed);
+
+        //if (inRankingObjectRect.position.y > 0.0f) {
+        //    var storePos = storeRect.position;
+        //    storePos.y -= Time.deltaTime * scrollSpeed;
+        //    storeRect.position = storePos;
+        //}
+        for (int index=0; index<rankingDataStore.transform.childCount; index++) {
+            var child = rankingDataStore.transform.GetChild(index);
+            var pos = child.localPosition;
+            pos.y -= Time.deltaTime * scrollSpeed;
+            child.localPosition = pos;
+
+        //}
+        //foreach (Transform child in rankingDataStore.transform) {
+        //    var pos = child.position;
+        //    pos.y -= Time.deltaTime * scrollSpeed;
+        //    child.position = pos;
+
+            //Vector3 positionInScreen = Camera.main.WorldToViewportPoint(child.position);
+            //if (positionInScreen.y <= -0.1f || positionInScreen.y >= 1.1f) {
+            //    Debug.Log("カメラの外出た" + index);
+            //}
+            if(index == 0) {
+                Debug.Log("position " + child.position);
+                Debug.Log("localPosition " + child.localPosition);
+            }
+
+            if(child.localPosition.y <= -400.0f) {
+                Debug.Log("ここきてる？ " + index);
+
+                Transform target;
+                if (index == 0) target = rankingDataStore.transform.GetChild(rankingData.Length - 1);
+                else target = rankingDataStore.transform.GetChild(index - 1);
+
+                //child.position = target.position;
+                var pos_2 = target.localPosition;
+                pos_2.y += child.GetComponent<RectTransform>().sizeDelta.y + rankingImage_AdjustPosition;
+                pos_2.y -= Time.deltaTime * scrollSpeed;
+                child.localPosition = pos_2;
+
+            }
         }
     }
+
 }

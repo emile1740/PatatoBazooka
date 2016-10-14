@@ -7,6 +7,7 @@ public class PumpkinButton : MonoBehaviour {
     private GameStateManager.Status destination;
     [HideInInspector]
     public UnityEvent CollisionPotato;
+    private bool onceCollision = false;
     void Start()
     {
         var temp = GameObject.FindObjectOfType<GameStateManager>();
@@ -29,10 +30,17 @@ public class PumpkinButton : MonoBehaviour {
                 break;
         }
     }
+
+    void OnEnable()
+    {
+        onceCollision = false;
+    }
+
     void OnCollisionEnter(Collision col)
     {
-        if (col.gameObject.tag == "Potato")
+        if (col.gameObject.tag == "Potato"&&!onceCollision)
         {
+            onceCollision = true;
             CollisionPotato.Invoke();
         }
 

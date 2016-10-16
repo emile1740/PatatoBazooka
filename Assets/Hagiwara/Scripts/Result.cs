@@ -21,12 +21,12 @@ public class Result : MonoBehaviour {
 
     [Header("ランキングデータを格納するオブジェクト")]
     public GameObject rankingDataStore;
-    
+
     [Header("今回のスコア")]
     public int score;
 
-    private bool isRankingSetting;
-    private bool isInRanking;
+    //private bool isRankingSetting;
+    //private bool isInRanking;
     private RectTransform storeRect;
 
     [Header("ランキングデータのスクロールスピード")]
@@ -49,9 +49,12 @@ public class Result : MonoBehaviour {
         SCROLL,
         END
     }
-    [Header("スクロール処理が行われるまでの時間")]
-    public float startScrollTime;
 
+    [Header("ランクイン時のフレーム")]
+    public Image countFrame;
+    private float countFrameTime;
+    [Header("ランクイン時のフレームの点滅間隔")]
+    public float falshInterval;
 
     // Use this for initialization
     void Start() {
@@ -66,13 +69,13 @@ public class Result : MonoBehaviour {
         if (state == State.NOT_IN_RANKING && Input.GetKeyDown(KeyCode.Space)) {
             setRankingData();
 
-            setRankingImage();
-            //isRankingSetting = true;
-            state = State.PLAYSE;
+            if (rankingNo != rankingData.Length) {
+                setRankingImage();
+                state = State.PLAYSE;
+            }
         }
 
         stateProcessing();
-
     }
 
     private void stateProcessing() {
@@ -82,45 +85,40 @@ public class Result : MonoBehaviour {
             case State.NOT_IN_RANKING:
                 //ランキング内に入っていない場合
                 break;
-
             case State.PLAYSE:
-                //ランキング内に入っている場合、ドラムロール音を鳴らす
+                //ランキング内に入っている場合、ドラムロール音を再生する
                 AudioManager.Instance.PlaySE("se_drumroll");
                 state = State.SCROLL;
                 break;
 
             case State.SCROLL:
-
-                //var isAudio = AudioManager.Instance.isPlayingSE();
-                startScrollTime -= Time.deltaTime;
-                if (startScrollTime < 0.0f) {
-
-                }else {
-                    //ドラムロール中はスクロール
-                    scrollRanking();
-                }
-
-                //state = State.END;
+                //ランキング内に入っている場合、スクロール処理
+                scrollRanking();
+                break;
+            case State.END:
+                //ランキング内に入っている場合、スクロール処理後にフレームを点滅させる
+                flashCountFrame();
                 break;
         }
     }
 
-
-    /// <summary>
-    /// ランキングデータを設定
-    /// </summary>
-    private void setRankingData() {
+/// <summary>
+/// ランキングデータを設定
+/// </summary>
+private void setRankingData() {
 
         //ランキングデータの読み込み
         rankingNo = rankingData.Length;
-        Debug.Log("ランキングデータの読み込み Ranking No " + rankingNo);
+
         ReadCsv();
+        Debug.Log("ランキングデータの読み込み後 Ranking No " + rankingNo);
 
         //今回のスコアがランクインされていたら、順位を変更して書き換える
         if (rankingNo != rankingData.Length) {
             WriteCsv();
-            isInRanking = true;
+            //isInRanking = true;
         }
+
     }
 
     /// <summary>
@@ -202,8 +200,6 @@ public class Result : MonoBehaviour {
         Debug.Log("Write success");
     }
 
-
-
     /// <summary>
     /// ランキング順位の生成
     /// </summary>
@@ -227,7 +223,12 @@ public class Result : MonoBehaviour {
             //ランキング順位画像の設定
             setRankingCountImage(index, rankingImageObj ,rank);
         }
-        inRankingObjectRect = rankingDataStore.transform.GetChild((rankingData.Length-1) - rankingNo).GetComponent<RectTransform>();
+
+        inRankingObjectRect = rankingDataStore.transform.GetChild((rankingData.Length - 1) - rankingNo).GetComponent<RectTransform>();
+        //changeMyScoreImageColor(inRankingObjectRect.FindChild("RankImage"));
+        //changeMyScoreImageColor(inRankingObjectRect.FindChild("ScoreImage"));
+        countFrame.transform.SetParent(inRankingObjectRect);
+        countFrame.transform.localPosition = Vector3.zero;
     }
 
     /// <summary>
@@ -261,23 +262,23 @@ public class Result : MonoBehaviour {
     private void setRankingCountImage(int index,GameObject rankingImageObj, int rank) {
 
         var rankImage = rankingImageObj.transform.FindChild("RankImage");
+        var rankTmp = rank - 1;
 
-        ////１の位は必ず表示
+        //１の位は必ず表示
         viewRankingImage(rankImage.GetChild(2).GetComponent<Image>(), rank % 10);
         rank /= 10;
 
         //ランキング１００位の場合、１０の位、１００の位を表示
-        if ((rankingData.Length - 1) - index == (rankingData.Length - 1)) {
+        if (rankTmp == (rankingData.Length - 1)) {
             viewRankingImage(rankImage.GetChild(0).GetComponent<Image>(), 1);
             viewRankingImage(rankImage.GetChild(1).GetComponent<Image>(), 0);
         } else {
             //ランキング１０位以上の場合、１０の位を表示
-            if ((rankingData.Length - 1) - index >= 10) {
+            if (rankTmp >= 9) {
                 viewRankingImage(rankImage.GetChild(1).GetComponent<Image>(), rank % 10);
             }
         }
     }
-
 
     /// <summary>
     /// ランキング順位を表示
@@ -298,56 +299,64 @@ public class Result : MonoBehaviour {
         image.sprite = common.count[countIndex];
     }
 
-
+    ///// <summary>
+    ///// ランキングに入った場合、自分のスコアが分かりやすいように色を変更する
+    ///// </summary>
+    ///// <param name="tf"></param>
+    //private void changeMyScoreImageColor(Transform tf) {
+    //    foreach(Transform t in tf) t.GetComponent<Image>().color = new Color(1,0,0);
+    //}
 
     /// <summary>
     /// ランキングデータのスクロール処理
     /// </summary>
     private void scrollRanking() {
 
-        //Vector3.MoveTowards(inRankingObjectRect.position, targetPos,Time.deltaTime * scrollSpeed);
-
-        //if (inRankingObjectRect.position.y > 0.0f) {
-        //    var storePos = storeRect.position;
-        //    storePos.y -= Time.deltaTime * scrollSpeed;
-        //    storeRect.position = storePos;
-        //}
-        for (int index=0; index<rankingDataStore.transform.childCount; index++) {
+        for (int index=0; index<rankingData.Length; index++) {
             var child = rankingDataStore.transform.GetChild(index);
             var pos = child.localPosition;
             pos.y -= Time.deltaTime * scrollSpeed;
             child.localPosition = pos;
 
-        //}
-        //foreach (Transform child in rankingDataStore.transform) {
-        //    var pos = child.position;
-        //    pos.y -= Time.deltaTime * scrollSpeed;
-        //    child.position = pos;
+            Transform stopTargetObject = null;
+            if (rankingNo >= 3 && rankingNo <= (rankingData.Length - 1) - 2) {
+                if (inRankingObjectRect == child) {
+                    stopTargetObject = child;
+                }
+            } else {
+                
+                if (rankingNo < 3) {
+                    //ランキングに入った順位が１位か２位の場合
+                    stopTargetObject = rankingDataStore.transform.GetChild((rankingData.Length - 1) - 2);
+                } else if (rankingNo > (rankingData.Length - 1) - 2) {
+                    //ランキングに入った順位が９９位か１００位の場合
+                    stopTargetObject = rankingDataStore.transform.GetChild(2);
+                }
 
-            //Vector3 positionInScreen = Camera.main.WorldToViewportPoint(child.position);
-            //if (positionInScreen.y <= -0.1f || positionInScreen.y >= 1.1f) {
-            //    Debug.Log("カメラの外出た" + index);
-            //}
-            if(index == 0) {
-                Debug.Log("position " + child.position);
-                Debug.Log("localPosition " + child.localPosition);
             }
+            if (stopTargetObject != null && stopTargetObject.localPosition.y <= 0.0f) {
+                var pos_2 = stopTargetObject.transform.localPosition;
+                pos_2.y = 0.0f;
+                stopTargetObject.transform.localPosition = pos_2;
 
-            if(child.localPosition.y <= -400.0f) {
-                Debug.Log("ここきてる？ " + index);
-
-                Transform target;
-                if (index == 0) target = rankingDataStore.transform.GetChild(rankingData.Length - 1);
-                else target = rankingDataStore.transform.GetChild(index - 1);
-
-                //child.position = target.position;
-                var pos_2 = target.localPosition;
-                pos_2.y += child.GetComponent<RectTransform>().sizeDelta.y + rankingImage_AdjustPosition;
-                pos_2.y -= Time.deltaTime * scrollSpeed;
-                child.localPosition = pos_2;
-
+                AudioManager.Instance.StopSE();
+                AudioManager.Instance.PlaySE("se_cymbal");
+                state = State.END;
+                break;
             }
         }
     }
 
+    /// <summary>
+    /// ランクインしたスコアのフレームを点滅させる
+    /// </summary>
+    private void flashCountFrame() {
+        
+        countFrameTime += Time.deltaTime;
+        if((int)((countFrameTime + falshInterval) % 2) == 0) {
+            countFrame.enabled = true;
+        }else {
+            countFrame.enabled = false;
+        }
+    }
 }

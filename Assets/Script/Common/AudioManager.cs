@@ -27,8 +27,6 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
 	private Dictionary<string,AudioClip> bgmDict = null;
 	private Dictionary<string,AudioClip> seDict = null;
 
-    private AudioSource onSource;
-
 	/// <summary>
 	/// 開始処理
 	/// </summary>
@@ -51,7 +49,7 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
 		}
 
 		//AudioSourceを生成する
-		this.bgmSource = this.gameObject.AddComponent<AudioSource> ();
+		//this.bgmSource = this.gameObject.AddComponent<AudioSource> ();
 		this.seSources = new List<AudioSource> ();
 
 		//AudioClipを生成する
@@ -107,6 +105,8 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
 		Invoke("DelayPlayBGM", delay);
 	}
 
+    public int count;
+
 	/// <summary>
 	/// SEを設定する
 	/// </summary>
@@ -114,9 +114,12 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
 	public void PlaySE(string seName, float volume = DEF_VOL_SE, float pitch = DEF_PITCH, float delay = 0.0f)
 	{
 		if (!this.seDict.ContainsKey(seName))
-			throw new ArgumentException(seName + " not found", "seName");
+            throw new ArgumentException(seName + " not found", "seName");
+
+        //プレイ中ではない最初の指定したSEを取得
 		AudioSource source = this.seSources.FirstOrDefault(s => !s.isPlaying);
-		if (source == null)
+
+        if (source == null)
 		{
 			if (this.seSources.Count >= this.MaxSE)
 			{
@@ -132,14 +135,57 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
 		source.pitch = pitch;
 
 		source.Play();
-        onSource = source;
+    }
+
+    /// <summary>
+    /// SEを設定する
+    /// </summary>
+    /// <param name="seName"></param>
+    public void repeatSE(string seName, float volume = DEF_VOL_SE) {
+        //同じ名前のSEがあった場合は、そのSEが再生されていない時に再び再生する
+
+        if (!this.seDict.ContainsKey(seName))
+            throw new ArgumentException(seName + " not found", "seName");
+
+        var sourceList = GetComponents<AudioSource>();
+        AudioSource source = null;
+        if(sourceList.Length > 0) {
+            //コンポーネントの中のAudioSourceから、指定された名前のSEがあるかどうかを探す
+            foreach (var s in sourceList) {
+                if(s.clip.name == seName) {
+                    source = s;
+                    break;
+                }
+            }
+        }
+
+        //コンポーネントの中にAudioSourceがなかった場合、
+        //もしくは指定したSEが再生中の場合は、今回のSEを追加
+        if (sourceList.Length == 0 || source == null){
+
+            if (this.seSources.Count >= this.MaxSE) {
+                Debug.Log("SE AudioSource is full");
+                return;
+            }
+
+            source = gameObject.AddComponent<AudioSource>();
+            this.seSources.Add(source);
+            source.clip = this.seDict[seName];
+        }
+
+        if (!source.isPlaying){
+            source.volume = (volume == DEF_VOL_SE) ? this.SE_Volume : volume;
+            source.Play();
+        }        
 
     }
 
-	/// <summary>
-	/// BGMを停止する
-	/// </summary>
-	public void StopBGM()
+
+
+    /// <summary>
+    /// BGMを停止する
+    /// </summary>
+    public void StopBGM()
 	{
 		this.bgmSource.Stop();
 		this.bgmSource.clip = null;
@@ -170,10 +216,23 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
 	}
 
     /// <summary>
-    /// SEが再生中かどうかを取得
+    /// 指定したSEを再び再生できる場合は、その音を取得
     /// </summary>
-    /// <returns></returns>
-    public bool isPlayingSE() {
-        return onSource.isPlaying;
-    }
+    /// <param name="seName"></param>
+    //public AudioSource isRePlaySE(string seName) {
+    //    var sourceList = GetComponents<AudioSource>();
+
+    //    foreach (var source in sourceList) {
+    //        Debug.Log("sourceClipName " + source.clip.name);
+    //    }
+
+    //    //foreach (var source in sourceList) {
+    //    //    if (source.clip.name == seName && !source.isPlaying) {
+    //    //        return source;
+    //    //    }
+    //    //}
+    //    return null;
+    //}
+
+
 }

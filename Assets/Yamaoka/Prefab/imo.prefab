@@ -24,6 +24,7 @@ GameObject:
   - 95: {fileID: 95000010294738996}
   - 54: {fileID: 54000010253567044}
   - 136: {fileID: 136000014139416110}
+  - 114: {fileID: 114000010642261512}
   m_Layer: 0
   m_Name: imo
   m_TagString: Potato
@@ -112,6 +113,17 @@ Animator:
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
+--- !u!114 &114000010642261512
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000011116494302}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b3190f7fbcc0ba4780f6f7275c028a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!136 &136000014139416110
 CapsuleCollider:
   m_ObjectHideFlags: 1

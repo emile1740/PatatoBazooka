@@ -52,13 +52,13 @@ public class Shoot : MonoBehaviour {
         if (rightController.GetPressDown(SteamVR_Controller.ButtonMask.Trigger))
         {
             GameObject temp = (GameObject)Instantiate(bullet, fireTrans.position, Quaternion.identity);
-            temp.GetComponent<Rigidbody>().velocity = rightTransform.rotation * Vector3.forward * speed;
+            temp.GetComponent<Rigidbody>().velocity = fireTrans.rotation * Vector3.forward * speed;
 
         }
         if (leftController.GetPressDown(SteamVR_Controller.ButtonMask.Trigger))
         {
             GameObject temp = (GameObject)Instantiate(bullet, fireTrans.position, Quaternion.identity);
-            temp.GetComponent<Rigidbody>().velocity = leftTransform.rotation * Vector3.forward * speed;
+            temp.GetComponent<Rigidbody>().velocity = fireTrans.rotation * Vector3.forward * speed;
 
         }
     }

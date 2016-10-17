@@ -66,7 +66,7 @@ public class Result : MonoBehaviour {
 
         //とりあえずテストでスペースを押したら、ランキングデータの表示を行うようにしてある
         //本来はゲーム終了後何秒間か経過したら？になるのかな
-        if (state == State.NOT_IN_RANKING && Input.GetKeyDown(KeyCode.Space)) {
+        if (state == State.NOT_IN_RANKING && Input.GetKeyDown(KeyCode.Return)) {
             setRankingData();
 
             if (rankingNo != rankingData.Length) {

@@ -4,29 +4,42 @@ using UnityEngine.Events;
 
 //コメント不足
 public class PumpkinEnemy : MonoBehaviour {
-    //全動きのパターン共通
+//全動きのパターン共通
     //
     [HideInInspector]
     public UnityEvent CollisionPotato;
     [SerializeField,Header("プレイヤーの位置用")]
     private Transform playerTrans;
-    //プレイヤーからの距離と方向
+    //プレイヤーからの距離と方向と高さ
     //生成時にランダムに決定
-    private float distance=15.0f;
+    private float distance;
     private float direction;
-
-    //ここまで共通
-
-    [SerializeField,Header("1周にかかる時間")]
+    private float height;
+//ここまで共通
+    
+//周の動き共通
+    [SerializeField, Header("1周にかかる時間")]
     private float aroundPerSecond = 1.0f;
     //360/aroundPerSecondでスピードを設定
     private float aroundSpeed = 0.0f;
-    private float euler = 0;
+//ここまで共通
+
+//円の動き共通
+    private float angle = 0;
+    //行動の半径
+    [SerializeField, Header("行動の半径")]
+    private float radius = 1.0f;
+    [SerializeField, Header("1回転にかかる時間")]
+    private float rotatePerSecond = 1.0f;
+    private float rotateSpeed;
+//ここまで共通
+
+    
+    
     //出現時のポジションを記憶
     private Vector3 startPos;
-    //行動の半径
-    [SerializeField,Header("行動の半径")]
-    private float radius = 1.0f;
+    
+    
 
     [SerializeField]
     private MoveType moveType;
@@ -58,32 +71,30 @@ public class PumpkinEnemy : MonoBehaviour {
     {
         startPos = transform.position;
 
-        transform.LookAt(playerTrans);
+        //switch (moveType)
+        //{
+        //    case MoveType.random:
+        //        Random();
+        //        break;
+        //    case MoveType.around:
+        //        Around();
+        //        break;
+        //    case MoveType.aroundWave:
+        //        AroundWave();
+        //        break;
+        //    case MoveType.vertical:
+        //        Vertical();
+        //        break;
+        //    case MoveType.lateral:
+        //        Lateral();
+        //        break;
+        //    case MoveType.circle:
+        //        Circle();
+        //        break;
+        //    default:
 
-        switch (moveType)
-        {
-            case MoveType.random:
-                RandomMove();
-                break;
-            case MoveType.around:
-                AroundMove();
-                break;
-            case MoveType.aroundWave:
-                AroundWaveMove();
-                break;
-            case MoveType.vertical:
-                VerticalMove();
-                break;
-            case MoveType.lateral:
-                LateralMove();
-                break;
-            case MoveType.circle:
-                CircleMove();
-                break;
-            default:
-
-                break;
-        }
+        //        break;
+        //}
     }
 	
 	// Update is called once per frame
@@ -116,50 +127,64 @@ public class PumpkinEnemy : MonoBehaviour {
         }
 	}
 
+
+
+    //ランダムな動き
     void RandomMove()
     {
 
     }
-
+    //周の動き
     void AroundMove()
     {
         if (isTurnRight)
-            euler += aroundSpeed * Time.deltaTime;
-        else euler -= aroundSpeed * Time.deltaTime;
+            direction += aroundSpeed * Time.deltaTime;
+        else direction -= aroundSpeed * Time.deltaTime;
 
         var circlePos = Vector3.zero;
-        circlePos.x = Mathf.Cos(euler * Mathf.Deg2Rad) * radius; 
-        circlePos.z = Mathf.Sin(euler * Mathf.Deg2Rad) * radius;
+        circlePos.x = Mathf.Cos(direction * Mathf.Deg2Rad) * distance;
+        circlePos.z = Mathf.Sin(direction * Mathf.Deg2Rad) * distance;
 
         transform.position = playerTrans.position + circlePos;
     }
-
+    //波の動き
     void AroundWaveMove()
     {
+        if (isTurnRight)
+            direction += aroundSpeed * Time.deltaTime;
+        else direction -= aroundSpeed * Time.deltaTime;
 
+        var circlePos = Vector3.zero;
+        circlePos.x = Mathf.Cos(direction * Mathf.Deg2Rad) * distance;
+        circlePos.z = Mathf.Sin(direction * Mathf.Deg2Rad) * distance;
+
+        angle += aroundSpeed * Time.deltaTime;
+        circlePos.y = Mathf.Sin(angle * Mathf.Deg2Rad) * radius;
+
+        transform.position = playerTrans.position + circlePos;
     }
-
     //縦の動き
     void VerticalMove()
     {
         if (isTurnRight)
-            euler += aroundSpeed * Time.deltaTime;
-        else euler -= aroundSpeed * Time.deltaTime;
+            angle += aroundSpeed * Time.deltaTime;
+        else angle -= aroundSpeed * Time.deltaTime;
 
         var circlePos = Vector3.zero;
-        circlePos.y = Mathf.Cos(euler * Mathf.Deg2Rad) * radius;
-
+        circlePos.y = Mathf.Sin(angle * Mathf.Deg2Rad) * radius;
+        
         transform.position = startPos + circlePos;
     }
     //横の動き
     void LateralMove()
     {
         if (isTurnRight)
-            euler += aroundSpeed * Time.deltaTime;
-        else euler -= aroundSpeed * Time.deltaTime;
+            angle += aroundSpeed * Time.deltaTime;
+        else angle -= aroundSpeed * Time.deltaTime;
 
         var circlePos = Vector3.zero;
-        circlePos.x = Mathf.Sin(euler * Mathf.Deg2Rad) * radius;
+        circlePos.x = Mathf.Cos(angle * Mathf.Deg2Rad) * radius;
+        circlePos = transform.rotation * circlePos;
 
         transform.position = startPos + circlePos;
     }
@@ -167,16 +192,132 @@ public class PumpkinEnemy : MonoBehaviour {
     void CircleMove()
     {
         if (isTurnRight)
-            euler += aroundSpeed * Time.deltaTime;
-        else euler -= aroundSpeed * Time.deltaTime;
+            angle += aroundSpeed * Time.deltaTime;
+        else angle -= aroundSpeed * Time.deltaTime;
 
         var circlePos = Vector3.zero;
-        circlePos.x = Mathf.Sin(euler * Mathf.Deg2Rad) * radius;
-        circlePos.y = Mathf.Cos(euler * Mathf.Deg2Rad) * radius;
+        circlePos.x = Mathf.Sin(angle * Mathf.Deg2Rad) * radius;
         circlePos = transform.rotation * circlePos;
+        circlePos.y = Mathf.Cos(angle * Mathf.Deg2Rad) * radius;
         transform.position = startPos + circlePos;
     }
 
+    public void Random()
+    {
+
+    }
+    public void Around(float dis,float dir,float high,float aroundTime)
+    {
+        moveType = MoveType.around;
+
+        distance = dis;
+        direction = dir;
+        height = high;
+        aroundPerSecond = aroundTime;
+        aroundSpeed = 360.0f / aroundPerSecond;
+
+        var pos = playerTrans.position;
+        pos += Quaternion.Euler(0.0f, direction, 0.0f) * Vector3.forward * distance;
+        pos.y = height;
+        transform.position = pos;
+    }
+    public void AroundWave(float dis, float dir, float high, float aroundTime, float waveRad, float waveTime)
+    {
+        moveType = MoveType.aroundWave;
+
+        distance = dis;
+        direction = dir;
+        height = high;
+        aroundPerSecond = aroundTime;
+        radius = waveRad;
+        rotatePerSecond = waveTime;
+        rotateSpeed = 360.0f / rotatePerSecond;
+        angle = 0;
+
+        var pos = playerTrans.position;
+        pos += Quaternion.Euler(0.0f, direction, 0.0f) * Vector3.forward * distance;
+        pos.y = height;
+        transform.position = pos;
+    }
+    public void Vertical(float dis, float dir, float high, float rotateTime, float rad)
+    {
+        moveType = MoveType.vertical;
+
+        distance = dis;
+        direction = dir;
+        height = high;
+        rotatePerSecond = rotateTime;
+        rotateSpeed = 360.0f / rotatePerSecond;
+        radius = rad;
+        rotatePerSecond = rotateTime;
+        rotateSpeed = 360.0f / rotatePerSecond;
+        angle = 0;
+
+        var pos = playerTrans.position;
+        pos += Quaternion.Euler(0.0f, direction, 0.0f) * Vector3.forward * distance;
+        pos.y = height;
+        transform.position = pos;
+
+        startPos = transform.position;
+
+        var circlePos = Vector3.zero;
+        circlePos.y = Mathf.Cos(angle * Mathf.Deg2Rad) * radius;
+        circlePos = transform.rotation * circlePos;
+        transform.position = startPos + circlePos;
+    }
+    public void Lateral(float dis, float dir, float high, float rotateTime, float rad)
+    {
+        moveType = MoveType.lateral;
+
+        distance = dis;
+        direction = dir;
+        height = high;
+        rotatePerSecond = rotateTime;
+        rotateSpeed = 360.0f / rotatePerSecond;
+        radius = rad;
+        rotatePerSecond = rotateTime;
+        rotateSpeed = 360.0f / rotatePerSecond;
+        angle = 0;
+
+        var pos = playerTrans.position;
+        pos += Quaternion.Euler(0.0f, direction, 0.0f) * Vector3.forward * distance;
+        pos.y = height;
+        transform.position = pos;
+
+        startPos = transform.position;
+
+        var circlePos = Vector3.zero;
+        circlePos.x = Mathf.Sin(angle * Mathf.Deg2Rad) * radius;
+        circlePos = transform.rotation * circlePos;
+        transform.position = startPos + circlePos;
+    }
+    public void Circle(float dis, float dir, float high, float rotateTime, float rad)
+    {
+        moveType = MoveType.circle;
+
+        distance = dis;
+        direction = dir;
+        height = high;
+        rotatePerSecond = rotateTime;
+        rotateSpeed = 360.0f / rotatePerSecond;
+        radius = rad;
+        rotatePerSecond = rotateTime;
+        rotateSpeed = 360.0f / rotatePerSecond;
+        angle = 0;
+
+        var pos = playerTrans.position;
+        pos += Quaternion.Euler(0.0f, direction, 0.0f) * Vector3.forward * distance;
+        pos.y = height;
+        transform.position = pos;
+
+        startPos = transform.position;
+
+        var circlePos = Vector3.zero;
+        circlePos.x = Mathf.Sin(angle * Mathf.Deg2Rad) * radius;
+        circlePos.y = Mathf.Cos(angle * Mathf.Deg2Rad) * radius;
+        circlePos = transform.rotation * circlePos;
+        transform.position = startPos + circlePos;
+    }
 
     void OnCollisionEnter(Collision col)
     {

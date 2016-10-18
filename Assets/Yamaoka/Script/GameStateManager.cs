@@ -64,16 +64,22 @@ public class GameStateManager : MonoBehaviour {
 
     void PumpkinGenerator()
     {
-        //確認用
-        Transform playerTrans = GameObject.FindObjectOfType<Shoot>().transform;
-        float unitAngle = 360.0f / pumpNum ;
-        float angle = 30.0f;
+        //改善した
         for (int i = 0; i < pumpNum; i++)
         {
-            var pos = playerTrans.position + Quaternion.Euler(0.0f,angle,0.0f) * Vector3.forward * radius;
-            EnemyManager.Instance.GetEnemy(pos);
-            angle += 60;
+            EnemyManager.Instance.GetEnemy();
         }
+
+        ////確認用
+        //Transform playerTrans = GameObject.FindObjectOfType<Shoot>().transform;
+        //float unitAngle = 360.0f / pumpNum ;
+        //float angle = 30.0f;
+        //for (int i = 0; i < pumpNum; i++)
+        //{
+        //    var pos = playerTrans.position + Quaternion.Euler(0.0f,angle,0.0f) * Vector3.forward * radius;
+        //    EnemyManager.Instance.GetEnemy(pos);
+        //    angle += 60;
+        //}
     }
 
     //ゲーム開始前のカウントダウン

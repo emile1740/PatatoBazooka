@@ -10,6 +10,13 @@ public class Result : MonoBehaviour {
 
     private const string RANKING_FILE_PATH = "Assets/Resources/ranking.csv";
 
+    [Header("結果表示用パネル")]
+    public RectTransform resultPanel;
+    private float expandTimer;
+    [Header("結果表示用パネルを拡大させる時間")]
+    public float MAX_EXPAND_TIME;
+
+
     [Header("共通用オブジェクト")]
     public Common common;
 
@@ -25,8 +32,6 @@ public class Result : MonoBehaviour {
     [Header("今回のスコア")]
     public int score;
 
-    //private bool isRankingSetting;
-    //private bool isInRanking;
     private RectTransform storeRect;
 
     [Header("ランキングデータのスクロールスピード")]
@@ -44,6 +49,8 @@ public class Result : MonoBehaviour {
     [Header("遷移ステータス")]
     public State state;
     public enum State {
+        START,
+        PANEL_EXPAND,
         NOT_IN_RANKING,
         PLAYSE,
         SCROLL,
@@ -64,9 +71,11 @@ public class Result : MonoBehaviour {
     // Update is called once per frame
     void Update() {
 
-        //とりあえずテストでスペースを押したら、ランキングデータの表示を行うようにしてある
-        //本来はゲーム終了後何秒間か経過したら？になるのかな
-        if (state == State.NOT_IN_RANKING && Input.GetKeyDown(KeyCode.Return)) {
+        //とりあえず、エンターキーを押したら、パネルを拡大表示する
+        if (state == State.START && Input.GetKeyDown(KeyCode.Return)) {
+            state = State.PANEL_EXPAND;
+
+        } else if (state == State.NOT_IN_RANKING) {
             setRankingData();
 
             if (rankingNo != rankingData.Length) {
@@ -82,9 +91,18 @@ public class Result : MonoBehaviour {
 
         switch (state) {
 
+            case State.PANEL_EXPAND:
+                //パネルの拡大表示
+                //var scale = resultPanel.localScale;
+                expandTimer += Time.deltaTime;
+                var scale = Mathf.Lerp(0f,1f, expandTimer / MAX_EXPAND_TIME);
+                resultPanel.localScale = new Vector3(scale, scale, scale);
+                if (scale == 1.0f) state = State.NOT_IN_RANKING;
+                break;
             case State.NOT_IN_RANKING:
                 //ランキング内に入っていない場合
                 break;
+
             case State.PLAYSE:
                 //ランキング内に入っている場合、ドラムロール音を再生する
                 AudioManager.Instance.PlaySE("se_drumroll");
@@ -110,95 +128,100 @@ private void setRankingData() {
         //ランキングデータの読み込み
         rankingNo = rankingData.Length;
 
-        ReadCsv();
-        Debug.Log("ランキングデータの読み込み後 Ranking No " + rankingNo);
+        //ReadCsv();
+
+        var fr = new FileReader(this);
+        fr.ReadCsv();
+
+        //Debug.Log("ランキングデータの読み込み後 Ranking No " + rankingNo);
 
         //今回のスコアがランクインされていたら、順位を変更して書き換える
         if (rankingNo != rankingData.Length) {
-            WriteCsv();
-            //isInRanking = true;
+            //WriteCsv();
+            var fw = new FileWriter(this);
+            fw.WriteCsv();
         }
 
     }
 
-    /// <summary>
-    /// ランキングデータの読み込み
-    /// </summary>
-    private void ReadCsv() {
-        
-        try {
-            ReadCSVFile();
-        } catch (System.Exception e) {
-            // ファイルを開くのに失敗したとき
-            System.Console.WriteLine(e.Message);
-            Debug.Log("failed");
+    ///// <summary>
+    ///// ランキングデータの読み込み
+    ///// </summary>
+    //private void ReadCsv() {
 
-            WriteCSVFile();
-            ReadCSVFile();
-        }
-    }
+    //    try {
+    //        ReadCSVFile();
+    //    } catch (System.Exception e) {
+    //        // ファイルを開くのに失敗したとき
+    //        System.Console.WriteLine(e.Message);
+    //        Debug.Log("failed");
 
-    /// <summary>
-    /// CSVファイルから読み込み
-    /// </summary>
-    private void ReadCSVFile() {
-        int index = 0;
-        StreamReader reader = new StreamReader(RANKING_FILE_PATH);
+    //        WriteCSVFile();
+    //        ReadCSVFile();
+    //    }
+    //}
 
-        // ストリームの末尾まで繰り返す
-        while (reader.Peek() > -1) {
+    ///// <summary>
+    ///// CSVファイルから読み込み
+    ///// </summary>
+    //private void ReadCSVFile() {
+    //    int index = 0;
+    //    StreamReader reader = new StreamReader(RANKING_FILE_PATH);
 
-            // ファイルから一行読み込む
-            var lineValue = int.Parse(reader.ReadLine());
+    //    // ストリームの末尾まで繰り返す
+    //    while (reader.Peek() > -1) {
 
-            //読み込んだスコアよりも今回のスコアのほうが大きい場合、
-            //あとでそのランキングの場所に挿入するために、ランキングNoを保存しておく
-            Debug.Log("rankingNo " + rankingNo);
-            Debug.Log("lineValue " + lineValue + " score " + score);
-            if (rankingNo == rankingData.Length && lineValue < score) rankingNo = index;
+    //        // ファイルから一行読み込む
+    //        var lineValue = int.Parse(reader.ReadLine());
 
-            rankingData[index] = lineValue;
-            index++;
-        }
+    //        //読み込んだスコアよりも今回のスコアのほうが大きい場合、
+    //        //あとでそのランキングの場所に挿入するために、ランキングNoを保存しておく
+    //        Debug.Log("rankingNo " + rankingNo);
+    //        Debug.Log("lineValue " + lineValue + " score " + score);
+    //        if (rankingNo == rankingData.Length && lineValue < score) rankingNo = index;
 
-        Debug.Log("success");
-        reader.Close();
-    }
+    //        rankingData[index] = lineValue;
+    //        index++;
+    //    }
 
-    /// <summary>
-    /// ランキングデータの書き込み
-    /// </summary>
-    private void WriteCsv() {
+    //    Debug.Log("success");
+    //    reader.Close();
+    //}
 
-        //今回ランクインされる順位以降の順位を１つ下げて、該当の順位に今回のスコアを入れる
-        for (int index = rankingData.Length - 2; index >= rankingNo; index--) {
-            if (rankingData[index + 1] != rankingData[index]) rankingData[index + 1] = rankingData[index];
-        }
-        rankingData[rankingNo] = score;
+    ///// <summary>
+    ///// ランキングデータの書き込み
+    ///// </summary>
+    //private void WriteCsv() {
 
-        //書き込み処理
-        try {
-            WriteCSVFile();
+    //    //今回ランクインされる順位以降の順位を１つ下げて、該当の順位に今回のスコアを入れる
+    //    for (int index = rankingData.Length - 2; index >= rankingNo; index--) {
+    //        if (rankingData[index + 1] != rankingData[index]) rankingData[index + 1] = rankingData[index];
+    //    }
+    //    rankingData[rankingNo] = score;
 
-        } catch (System.Exception e) {
-            // ファイルを開くのに失敗したときエラーメッセージを表示
-            System.Console.WriteLine(e.Message);
-            Debug.Log("Write failed");
-        }
-    }
+    //    //書き込み処理
+    //    try {
+    //        WriteCSVFile();
 
-    /// <summary>
-    /// CSVファイルへの書き込み
-    /// </summary>
-    private void WriteCSVFile() {
-        StreamWriter writer = new StreamWriter(RANKING_FILE_PATH, false);
+    //    } catch (System.Exception e) {
+    //        // ファイルを開くのに失敗したときエラーメッセージを表示
+    //        System.Console.WriteLine(e.Message);
+    //        Debug.Log("Write failed");
+    //    }
+    //}
 
-        for (int i = 0; i < rankingData.Length; i++) writer.WriteLine(rankingData[i]);
+    ///// <summary>
+    ///// CSVファイルへの書き込み
+    ///// </summary>
+    //private void WriteCSVFile() {
+    //    StreamWriter writer = new StreamWriter(RANKING_FILE_PATH, false);
 
-        writer.Flush();
-        writer.Close();
-        Debug.Log("Write success");
-    }
+    //    for (int i = 0; i < rankingData.Length; i++) writer.WriteLine(rankingData[i]);
+
+    //    writer.Flush();
+    //    writer.Close();
+    //    Debug.Log("Write success");
+    //}
 
     /// <summary>
     /// ランキング順位の生成
@@ -312,39 +335,55 @@ private void setRankingData() {
     /// </summary>
     private void scrollRanking() {
 
-        for (int index=0; index<rankingData.Length; index++) {
-            var child = rankingDataStore.transform.GetChild(index);
-            var pos = child.localPosition;
-            pos.y -= Time.deltaTime * scrollSpeed;
-            child.localPosition = pos;
+        ////格納フォルダの座標を動かす
+        //var pos = storeRect.transform.position;
+        //pos.y -= Time.deltaTime * scrollSpeed;
+        //var nextPos = pos;
 
-            Transform stopTargetObject = null;
-            if (rankingNo >= 3 && rankingNo <= (rankingData.Length - 1) - 2) {
-                if (inRankingObjectRect == child) {
-                    stopTargetObject = child;
-                }
-            } else {
-                
-                if (rankingNo < 3) {
-                    //ランキングに入った順位が１位か２位の場合
-                    stopTargetObject = rankingDataStore.transform.GetChild((rankingData.Length - 1) - 2);
-                } else if (rankingNo > (rankingData.Length - 1) - 2) {
-                    //ランキングに入った順位が９９位か１００位の場合
-                    stopTargetObject = rankingDataStore.transform.GetChild(2);
-                }
 
-            }
-            if (stopTargetObject != null && stopTargetObject.localPosition.y <= 0.0f) {
-                var pos_2 = stopTargetObject.transform.localPosition;
-                pos_2.y = 0.0f;
-                stopTargetObject.transform.localPosition = pos_2;
+        ////対象のオブジェクト
+        //if(inRankingObjectRect.localPosition = )
 
-                AudioManager.Instance.StopSE();
-                AudioManager.Instance.PlaySE("se_cymbal");
-                state = State.END;
-                break;
-            }
-        }
+
+
+
+
+
+
+        ////考え方を変える必要がある
+        //for (int index=0; index<rankingData.Length; index++) {
+        //    var child = rankingDataStore.transform.GetChild(index);
+        //    var pos = child.localPosition;
+        //    pos.y -= Time.deltaTime * scrollSpeed;
+        //    child.localPosition = pos;
+
+            //    Transform stopTargetObject = null;
+            //    if (rankingNo >= 3 && rankingNo <= (rankingData.Length - 1) - 2) {
+            //        if (inRankingObjectRect == child) {
+            //            stopTargetObject = child;
+            //        }
+            //    } else {
+
+            //        if (rankingNo < 3) {
+            //            //ランキングに入った順位が１位か２位の場合
+            //            stopTargetObject = rankingDataStore.transform.GetChild((rankingData.Length - 1) - 2);
+            //        } else if (rankingNo > (rankingData.Length - 1) - 2) {
+            //            //ランキングに入った順位が９９位か１００位の場合
+            //            stopTargetObject = rankingDataStore.transform.GetChild(2);
+            //        }
+
+            //    }
+            //    if (stopTargetObject != null && stopTargetObject.localPosition.y <= 0.0f) {
+            //        var pos_2 = stopTargetObject.transform.localPosition;
+            //        pos_2.y = 0.0f;
+            //        stopTargetObject.transform.localPosition = pos_2;
+
+            //        AudioManager.Instance.StopSE();
+            //        AudioManager.Instance.PlaySE("se_cymbal");
+            //        state = State.END;
+            //        break;
+            //    }
+            //}
     }
 
     /// <summary>

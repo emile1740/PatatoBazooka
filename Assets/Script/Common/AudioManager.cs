@@ -44,9 +44,9 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
 		object[] seObj = Resources.LoadAll(SE_PATH);
 		Debug.Log(seObj.Length);
 
-		if (FindObjectsOfType (typeof(AudioListener)).All (o => !((AudioListener)o).enabled)) {
-				this.gameObject.AddComponent<AudioListener> ();
-		}
+		//if (FindObjectsOfType (typeof(AudioListener)).All (o => !((AudioListener)o).enabled)) {
+		//		this.gameObject.AddComponent<AudioListener> ();
+		//}
 
 		//AudioSourceを生成する
 		//this.bgmSource = this.gameObject.AddComponent<AudioSource> ();

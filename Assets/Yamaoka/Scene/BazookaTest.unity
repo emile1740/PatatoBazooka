@@ -25,7 +25,7 @@ RenderSettings:
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1
   m_AmbientMode: 0
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SkyboxMaterial: {fileID: 0}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -37,7 +37,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44692534, g: 0.49678725, b: 0.5750856, a: 1}
+  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
@@ -481,7 +481,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nowState: 0
-  gameLimit: 10
+  gameLimit: 30
   pumpkinCount: 0
   startButton: {fileID: 1768264759}
   enemy: {fileID: 1000013326943942, guid: e2042c3cf985f2a44aa4acd5ba0661a7, type: 2}
@@ -672,6 +672,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pumpkin: {fileID: 1000013326943942, guid: e2042c3cf985f2a44aa4acd5ba0661a7, type: 2}
   maxPumpkin: 10
+  minDistance: 20
+  maxDistance: 30
+  minHeight: 0
+  maxHeight: 5
+  minAroundTime: 6
+  maxAroundTime: 12
+  minWaveRadius: 1
+  maxWaveRadius: 3
+  minWaveTime: 2
+  maxWaveTime: 5
+  minSpinRadius: 1
+  maxSpinRadius: 4
+  minSpinTime: 2
+  maxSpinTime: 8
 --- !u!4 &1838372219
 Transform:
   m_ObjectHideFlags: 0
@@ -697,6 +711,7 @@ GameObject:
   - 92: {fileID: 1975314598}
   - 124: {fileID: 1975314597}
   - 81: {fileID: 1975314596}
+  - 45: {fileID: 1975314600}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -772,6 +787,14 @@ Camera:
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
   m_StereoMirrorMode: 0
+--- !u!45 &1975314600
+Skybox:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1975314594}
+  m_Enabled: 1
+  m_CustomSkybox: {fileID: 2100000, guid: 90458264b1da540488a9383d39288c86, type: 2}
 --- !u!1 &1989292499
 GameObject:
   m_ObjectHideFlags: 0

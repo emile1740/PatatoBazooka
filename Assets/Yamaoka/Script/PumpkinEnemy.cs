@@ -51,7 +51,40 @@ public class PumpkinEnemy : MonoBehaviour {
         startPos = transform.position;
         //一周にかける時間から速度を算出
         aroundSpeed = 360.0f / aroundPerSecond;
+        gameObject.SetActive(false);
 	}
+
+    void OnEnable()
+    {
+        startPos = transform.position;
+
+        transform.LookAt(playerTrans);
+
+        switch (moveType)
+        {
+            case MoveType.random:
+                RandomMove();
+                break;
+            case MoveType.around:
+                AroundMove();
+                break;
+            case MoveType.aroundWave:
+                AroundWaveMove();
+                break;
+            case MoveType.vertical:
+                VerticalMove();
+                break;
+            case MoveType.lateral:
+                LateralMove();
+                break;
+            case MoveType.circle:
+                CircleMove();
+                break;
+            default:
+
+                break;
+        }
+    }
 	
 	// Update is called once per frame
 	void Update () {
@@ -90,7 +123,15 @@ public class PumpkinEnemy : MonoBehaviour {
 
     void AroundMove()
     {
+        if (isTurnRight)
+            euler += aroundSpeed * Time.deltaTime;
+        else euler -= aroundSpeed * Time.deltaTime;
 
+        var circlePos = Vector3.zero;
+        circlePos.x = Mathf.Cos(euler * Mathf.Deg2Rad) * radius; 
+        circlePos.z = Mathf.Sin(euler * Mathf.Deg2Rad) * radius;
+
+        transform.position = playerTrans.position + circlePos;
     }
 
     void AroundWaveMove()
@@ -142,7 +183,7 @@ public class PumpkinEnemy : MonoBehaviour {
         if (col.gameObject.tag == "Potato")
         {
             CollisionPotato.Invoke();
-            Destroy(gameObject);
+            gameObject.SetActive(false);
         }
 
     }

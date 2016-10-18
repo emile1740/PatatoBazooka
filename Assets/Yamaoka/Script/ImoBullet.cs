@@ -4,8 +4,7 @@ using System.Collections;
 public class ImoBullet : MonoBehaviour {
     private Collider myCol;
 
-	// Use this for initialization
-	void Start () {
+	void Awake () {
         myCol = GetComponent<Collider>();
 	}
 

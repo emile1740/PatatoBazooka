@@ -348,7 +348,7 @@ GameObject:
   - 4: {fileID: 570750424}
   - 114: {fileID: 570750423}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: DebugMove
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -643,6 +643,48 @@ GameObject:
   m_PrefabParentObject: {fileID: 1000013835246850, guid: 263b7a51cb5855342b446bbd3b565435,
     type: 2}
   m_PrefabInternal: {fileID: 1768264758}
+--- !u!1 &1838372217
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 1838372219}
+  - 114: {fileID: 1838372218}
+  m_Layer: 0
+  m_Name: Enemies
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1838372218
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1838372217}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b376874d218c04c4ca91f2b3987a15ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pumpkin: {fileID: 1000013326943942, guid: e2042c3cf985f2a44aa4acd5ba0661a7, type: 2}
+  maxPumpkin: 10
+--- !u!4 &1838372219
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1838372217}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 7
 --- !u!1 &1975314594
 GameObject:
   m_ObjectHideFlags: 0

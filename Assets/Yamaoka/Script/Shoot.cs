@@ -27,11 +27,7 @@ public class Shoot : MonoBehaviour {
 	// Use this for initialization
     void Start()
     {
-        if (isVive)
-        {
-            rightController = SteamVR_Controller.Input((int)rightTrackedObject.index);
-            leftController = SteamVR_Controller.Input((int)leftTrackedObject.index);
-        }
+
     }
 	
 	// Update is called once per frame
@@ -49,6 +45,8 @@ public class Shoot : MonoBehaviour {
 	}
     void UpdateVR()
     {
+        rightController = SteamVR_Controller.Input((int)rightTrackedObject.index);
+        leftController = SteamVR_Controller.Input((int)leftTrackedObject.index);
         if (rightController.GetPressDown(SteamVR_Controller.ButtonMask.Trigger))
         {
             GameObject temp = (GameObject)Instantiate(bullet, fireTrans.position, Quaternion.identity);

@@ -71,7 +71,7 @@ public class GameStateManager : MonoBehaviour {
         for (int i = 0; i < pumpNum; i++)
         {
             var pos = playerTrans.position + Quaternion.Euler(0.0f,angle,0.0f) * Vector3.forward * radius;
-            Instantiate(enemy, pos, Quaternion.identity);
+            EnemyManager.Instance.GetEnemy(pos);
             angle += 60;
         }
     }
@@ -152,7 +152,8 @@ public class GameStateManager : MonoBehaviour {
     }
     public void GoResult()
     {
-        //出現しているかぼちゃを消す：予定
+        //出現しているかぼちゃを消す
+        EnemyManager.Instance.ActiveAllFalse();
 
         StartCoroutine(GameFinishText());
     }

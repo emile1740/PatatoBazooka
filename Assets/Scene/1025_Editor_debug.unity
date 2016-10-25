@@ -47942,7 +47942,7 @@ MonoBehaviour:
   result: {fileID: 983505438}
   panelScalingManager: {fileID: 1977022966}
   nowState: 0
-  gameLimit: 30
+  gameLimit: 1
   pumpkinCount: 0
   startButton: {fileID: 1768264759}
   enemy: {fileID: 1000013326943942, guid: e2042c3cf985f2a44aa4acd5ba0661a7, type: 2}
@@ -77494,7 +77494,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce49ab8821176864bb1ec53e0943f4ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MAX_EXPAND_TIME: 0.2
+  MAX_SCALING_TIME: 0.2
 --- !u!4 &1977022967
 Transform:
   m_ObjectHideFlags: 0

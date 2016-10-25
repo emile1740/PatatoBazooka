@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.UI;
-using System.IO;
 
 /// <summary>
 /// リザルト画面を処理
@@ -10,12 +10,11 @@ public class Result : MonoBehaviour {
 
     private const string RANKING_FILE_PATH = "Assets/Resources/ranking.csv";
 
+    [Header("パネルの拡大縮小させるマネージャー")]
+    public PanelScalingManager panelScalingManager;
+
     [Header("結果表示用パネル")]
     public RectTransform resultPanel;
-    private float scalingTimer;
-    [Header("結果表示用パネルを拡大させる時間")]
-    public float MAX_EXPAND_TIME;
-
 
     [Header("共通用オブジェクト")]
     public Common common;
@@ -34,9 +33,6 @@ public class Result : MonoBehaviour {
     [Header("今回のスコア用の親オブジェクト")]
     public GameObject myScoreImageParent;
 
-    //[Header("ランキングデータを格納するオブジェクト")]
-    //public RectTransform storeRect;
-
     [Header("ランキングデータのスクロールスピード")]
     public float scrollSpeed;
 
@@ -49,6 +45,7 @@ public class Result : MonoBehaviour {
     [Header("ランキングデータ")]
     public int[] rankingData = new int[100];
 
+    //スクロールの終了座標
     private Vector3[] scrollTargetPosition = new Vector3[100];
 
     [Header("遷移ステータス")]
@@ -68,21 +65,53 @@ public class Result : MonoBehaviour {
     [Header("ランクイン時のフレームの点滅間隔")]
     public float falshInterval;
 
+    private Dictionary<GameObject, RectTransform> rankingDataDic;
+
     /// <summary>
     /// 値の初期化
     /// </summary>
     public void initialize() {
-        scalingTimer = 0.0f;
         state = State.START;
+        rankingNo = rankingData.Length;
         Debug.Log("result - initialize");
-    }
-
-    void OnEnable() {
-        initialize();
     }
 
     // Use this for initialization
     void Start() {
+
+        //ランキングデータの読み込み
+        var fr = new FileReader(this);
+        fr.ReadCsv();
+
+    }
+
+    /// <summary>
+    /// アプリケーション終了時にランキングデータに変更があればCSVファイルに書き込む
+    /// </summary>
+    void OnApplicationQuit() {
+        //今回のスコアがランクインされていたら、順位を変更して書き換える
+        if (rankingNo != rankingData.Length) {
+            var fw = new FileWriter(this);
+            fw.WriteCsv();
+        }
+    }
+
+
+    /// <summary>
+    /// タイムアップでゲームが終了した時に呼ばれる
+    /// </summary>
+    public void callViewResult() {
+        initialize();
+
+        //resultPanel.gameObject.SetActive(true);
+
+        rankingDataInsertScore();
+        setMyScoreData();
+        
+        if(!panelScalingManager.panelDic.ContainsKey(resultPanel))
+            panelScalingManager.addPanelDictionary(resultPanel,this);
+
+        state = State.PANEL_EXPAND;
     }
 
     // Update is called once per frame
@@ -90,12 +119,10 @@ public class Result : MonoBehaviour {
 
         //とりあえず、エンターキーを押したら、パネルを拡大表示する
         if (state == State.START && Input.GetKeyDown(KeyCode.Return)) {
-            resultPanel.gameObject.SetActive(true);
-            setMyScoreData();
-            state = State.PANEL_EXPAND;
+            callViewResult();
 
         } else if (state == State.NOT_IN_RANKING) {
-            setRankingData();
+            //setRankingData();
 
             //ランキングに変更があった場合
             //ランクインした順位が中央に来るように移動量を計算し、
@@ -132,12 +159,14 @@ public class Result : MonoBehaviour {
 
             case State.PANEL_EXPAND:
                 //パネルの拡大表示
-                resultPanelScaling(0.0f, 1.0f);
+                //resultPanelScaling(0.0f, 1.0f);
+                panelScalingManager.setPanelScaling(resultPanel,0.0f, 1.0f);
                 break;
 
             case State.PANEL_REDUCTION:
                 //パネルの縮小表示
-                resultPanelScaling(1.0f, 0.0f);
+                //resultPanelScaling(1.0f, 0.0f);
+                //panelScalingManager.setPanelScaling(resultPanel, 1.0f, 0.0f);
                 break;
 
             case State.NOT_IN_RANKING:
@@ -147,7 +176,7 @@ public class Result : MonoBehaviour {
 
             case State.SCROLL:
                 //ランキング内に入っている場合、スクロール処理
-                //scrollRanking();
+                scrollRanking();
                 break;
 
             case State.END:
@@ -158,23 +187,16 @@ public class Result : MonoBehaviour {
     }
 
     /// <summary>
-    /// 指定されたstからedの大きさにパネルを拡大縮小する
+    /// 拡大縮小演出が終了したら呼ばれる
     /// </summary>
-    /// <param name="st"></param>
-    /// <param name="ed"></param>
-    private void resultPanelScaling(float st,float ed) {
-        scalingTimer += Time.deltaTime;
-        var scale = Mathf.Lerp(st, ed, scalingTimer / MAX_EXPAND_TIME);
-        resultPanel.localScale = new Vector3(scale, scale, scale);
-        if (scale == ed) {
-            //拡大するステータスから参照された場合はランキング設定へ移行
-            if(state == State.PANEL_EXPAND) state = State.NOT_IN_RANKING;
-            else if(state == State.PANEL_REDUCTION) state = State.END;
-        }
+    public void scalingEnd() {
+        //拡大するステータスから参照された場合はランキング設定へ移行
+        if (state == State.PANEL_EXPAND) state = State.NOT_IN_RANKING;
+        else if (state == State.PANEL_REDUCTION) state = State.END;
     }
 
     /// <summary>
-    /// 今回のスコアを設定
+    /// 今回のスコアの画像を設定
     /// </summary>
     private void setMyScoreData() {
         scoreConversion(myScoreImageParent.transform,score);
@@ -200,26 +222,48 @@ public class Result : MonoBehaviour {
         }
     }
 
-
-
     /// <summary>
-    /// ランキングデータを設定
+    /// ランキングデータの配列に今回のスコアを追加する
     /// </summary>
-    private void setRankingData() {
+    private void rankingDataInsertScore() {
 
-        //ランキングデータの読み込み
-        rankingNo = rankingData.Length;
+        //読み込んだスコアよりも今回のスコアのほうが大きい場合、
+        //あとでそのランキングの場所に挿入するために、ランキングNoを保存しておく      
+        for (int i=0;i<rankingData.Length && rankingNo == rankingData.Length; i++) {
 
-        var fr = new FileReader(this);
-        fr.ReadCsv();
-
-        //今回のスコアがランクインされていたら、順位を変更して書き換える
-        if (rankingNo != rankingData.Length) {
-            var fw = new FileWriter(this);
-            fw.WriteCsv();
+            if (rankingData[i] < score) {
+                rankingNo = i;
+                for (int j = rankingNo; j < rankingData.Length - 1; j++) {
+                    rankingData[j + 1] = rankingData[j];
+                }
+                rankingData[rankingNo] = score;
+            }
         }
-
     }
+
+
+    ///// <summary>
+    ///// ランキングデータを設定
+    ///// </summary>
+    //private void setRankingData() {
+
+    //    //ランキングの読み込みタイミングはゲーム起動時に変更する必要がある
+
+    //    //ランキングデータの読み込み
+    //    rankingNo = rankingData.Length;
+
+    //    var fr = new FileReader(this);
+    //    fr.ReadCsv();
+
+    //    ランキングの書き込みタイミングはゲーム終了時に変更する必要がある
+
+    //    //今回のスコアがランクインされていたら、順位を変更して書き換える
+    //    if (rankingNo != rankingData.Length) {
+    //        var fw = new FileWriter(this);
+    //        fw.WriteCsv();
+    //    }
+
+    //}
 
     /// <summary>
     /// ランキング順位の生成

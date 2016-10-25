@@ -17,12 +17,12 @@ public class FileWriter{
     /// </summary>
     public void WriteCsv() {
 
-        //今回ランクインされる順位以降の順位を１つ下げて、該当の順位に今回のスコアを入れる
-        for (int index = result.rankingData.Length - 2; index >= result.rankingNo; index--) {
-            if (result.rankingData[index + 1] != result.rankingData[index])
-                result.rankingData[index + 1] = result.rankingData[index];
-        }
-        result.rankingData[result.rankingNo] = result.score;
+        ////今回ランクインされる順位以降の順位を１つ下げて、該当の順位に今回のスコアを入れる
+        //for (int index = result.rankingData.Length - 2; index >= result.rankingNo; index--) {
+        //    if (result.rankingData[index + 1] != result.rankingData[index])
+        //        result.rankingData[index + 1] = result.rankingData[index];
+        //}
+        //result.rankingData[result.rankingNo] = result.score;
 
         //書き込み処理
         try {
@@ -41,7 +41,8 @@ public class FileWriter{
     public void WriteCSVFile() {
         StreamWriter writer = new StreamWriter(RANKING_FILE_PATH, false);
 
-        for (int i = 0; i < result.rankingData.Length; i++) writer.WriteLine(result.rankingData[i]);
+        for (int i = 0; i < result.rankingData.Length; i++)
+            writer.WriteLine(result.rankingData[i]);
 
         writer.Flush();
         writer.Close();

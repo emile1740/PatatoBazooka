@@ -10,6 +10,7 @@ public class GameStateManager : MonoBehaviour {
         Result,
         Ranking
     }
+
     [SerializeField,Header("現在のシーン")]
     private Status nowState;
 
@@ -120,6 +121,7 @@ public class GameStateManager : MonoBehaviour {
         float waitTime = 1.0f;
         yield return new WaitForSeconds(waitTime);
         countDownText.text = "";
+        timeLimitText.text = "";
         nowState = Status.Result;
         startButton.SetActive(true);
     }
@@ -129,6 +131,7 @@ public class GameStateManager : MonoBehaviour {
         timer -= Time.deltaTime;
         if (timer < 0.0f)
         {
+            timeLimitText.text = "0";
             GoResult();
             return;
         }
@@ -136,9 +139,9 @@ public class GameStateManager : MonoBehaviour {
         timeLimitText.text = cnt.ToString();
     }
 
-    public void KillPumpkin()
+    public void KillPumpkin(int cnt)
     {
-        pumpkinCount++;
+        pumpkinCount += cnt;
     }
 
     public void GoGame()
@@ -149,7 +152,7 @@ public class GameStateManager : MonoBehaviour {
         //開始前のカウントダウン
         //引数はカウントダウンの時間
         //数値は未定
-        StartCoroutine(GameStartCountDown(4));
+        StartCoroutine(GameStartCountDown(3));
     }
     public void GoTitle()
     {

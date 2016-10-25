@@ -35,7 +35,7 @@ public class Shoot : MonoBehaviour {
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            GameObject temp = (GameObject)Instantiate(bullet, fireTrans.position, Quaternion.identity);
+            GameObject temp = (GameObject)Instantiate(bullet, fireTrans.position, Quaternion.Euler(fireTrans.eulerAngles + Vector3.left * 90.0f));
             temp.GetComponent<Rigidbody>().velocity = cameraTrans.rotation * Vector3.forward * speed;
         }
 
@@ -49,13 +49,13 @@ public class Shoot : MonoBehaviour {
         leftController = SteamVR_Controller.Input((int)leftTrackedObject.index);
         if (rightController.GetPressDown(SteamVR_Controller.ButtonMask.Trigger))
         {
-            GameObject temp = (GameObject)Instantiate(bullet, fireTrans.position, Quaternion.identity);
+            GameObject temp = (GameObject)Instantiate(bullet, fireTrans.position, Quaternion.Euler(fireTrans.eulerAngles + Vector3.left * 90.0f));
             temp.GetComponent<Rigidbody>().velocity = fireTrans.rotation * Vector3.forward * speed;
 
         }
         if (leftController.GetPressDown(SteamVR_Controller.ButtonMask.Trigger))
         {
-            GameObject temp = (GameObject)Instantiate(bullet, fireTrans.position, Quaternion.identity);
+            GameObject temp = (GameObject)Instantiate(bullet, fireTrans.position, Quaternion.Euler(fireTrans.eulerAngles + Vector3.left * 90.0f));
             temp.GetComponent<Rigidbody>().velocity = fireTrans.rotation * Vector3.forward * speed;
 
         }

@@ -36,23 +36,27 @@ public class DebugObjectMove : MonoBehaviour
         }
         if (Input.GetKey(KeyCode.UpArrow))
         {
-            moveObject.transform.Rotate
-                (Vector3.right * 30.0f * Time.deltaTime);
+            moveObject.transform.eulerAngles += Vector3.left * 30.0f * Time.deltaTime;
+            //moveObject.transform.Rotate
+            //    (Vector3.right * 30.0f * Time.deltaTime);
         }
         if (Input.GetKey(KeyCode.LeftArrow))
         {
-            moveObject.transform.Rotate
-                (Vector3.down * 30.0f * Time.deltaTime);
+            moveObject.transform.eulerAngles += Vector3.down * 30.0f * Time.deltaTime;
+            //moveObject.transform.Rotate
+            //    (Vector3.down * 30.0f * Time.deltaTime);
         }
         if (Input.GetKey(KeyCode.DownArrow))
         {
-            moveObject.transform.Rotate
-                (Vector3.left * 30.0f * Time.deltaTime);
+            moveObject.transform.eulerAngles += Vector3.right * 30.0f * Time.deltaTime;
+            //moveObject.transform.Rotate
+            //    (Vector3.left * 30.0f * Time.deltaTime);
         }
         if (Input.GetKey(KeyCode.RightArrow))
         {
-            moveObject.transform.Rotate
-                (Vector3.up * 30.0f * Time.deltaTime);
+            moveObject.transform.eulerAngles += Vector3.up * 30.0f * Time.deltaTime;
+            //moveObject.transform.Rotate
+            //    (Vector3.up * 30.0f * Time.deltaTime);
         }
     }
 }

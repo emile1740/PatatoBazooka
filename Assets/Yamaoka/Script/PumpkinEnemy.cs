@@ -6,8 +6,15 @@ using UnityEngine.Events;
 public class PumpkinEnemy : MonoBehaviour {
 //全動きのパターン共通
     //
-    [HideInInspector]
-    public UnityEvent CollisionPotato;
+
+    //[HideInInspector]
+    //public UnityEvent CollisionPotato;
+
+    private GameStateManager gameState;
+    private MeshFilter mesh;
+    private MeshCollider meshCollider;
+    private int pumpScore;
+
     [SerializeField,Header("プレイヤーの位置用")]
     private Transform playerTrans;
     //プレイヤーからの距離と方向と高さ
@@ -36,7 +43,7 @@ public class PumpkinEnemy : MonoBehaviour {
 
     
     
-    //出現時のポジションを記憶
+    //軸となるポジション
     private Vector3 startPos;
     
     
@@ -58,49 +65,20 @@ public class PumpkinEnemy : MonoBehaviour {
     
 	// Use this for initialization
 	void Start () {
-        var temp = GameObject.FindObjectOfType<GameStateManager>();
+        gameState = GameObject.FindObjectOfType<GameStateManager>();
         playerTrans = GameObject.FindGameObjectWithTag("Player").transform;
-        CollisionPotato.AddListener(temp.KillPumpkin);
-        startPos = transform.position;
+        //CollisionPotato.AddListener(temp.KillPumpkin);
         //一周にかける時間から速度を算出
         aroundSpeed = 360.0f / aroundPerSecond;
+
+        mesh = transform.GetChild(0).GetComponent<MeshFilter>();
+        meshCollider = GetComponent<MeshCollider>();
+
         gameObject.SetActive(false);
 	}
 
-    void OnEnable()
-    {
-        startPos = transform.position;
-
-        //switch (moveType)
-        //{
-        //    case MoveType.random:
-        //        Random();
-        //        break;
-        //    case MoveType.around:
-        //        Around();
-        //        break;
-        //    case MoveType.aroundWave:
-        //        AroundWave();
-        //        break;
-        //    case MoveType.vertical:
-        //        Vertical();
-        //        break;
-        //    case MoveType.lateral:
-        //        Lateral();
-        //        break;
-        //    case MoveType.circle:
-        //        Circle();
-        //        break;
-        //    default:
-
-        //        break;
-        //}
-    }
-	
 	// Update is called once per frame
 	void Update () {
-        transform.LookAt(playerTrans);
-
         switch (moveType)
         {
             case MoveType.random:
@@ -145,7 +123,8 @@ public class PumpkinEnemy : MonoBehaviour {
         circlePos.x = Mathf.Cos(direction * Mathf.Deg2Rad) * distance;
         circlePos.z = Mathf.Sin(direction * Mathf.Deg2Rad) * distance;
 
-        transform.position = playerTrans.position + circlePos;
+        transform.position = startPos + circlePos;
+        transform.LookAt(playerTrans);
     }
     //波の動き
     void AroundWaveMove()
@@ -161,7 +140,8 @@ public class PumpkinEnemy : MonoBehaviour {
         angle += aroundSpeed * Time.deltaTime;
         circlePos.y = Mathf.Sin(angle * Mathf.Deg2Rad) * radius;
 
-        transform.position = playerTrans.position + circlePos;
+        transform.position = startPos + circlePos;
+        transform.LookAt(playerTrans);
     }
     //縦の動き
     void VerticalMove()
@@ -199,10 +179,12 @@ public class PumpkinEnemy : MonoBehaviour {
         circlePos.x = Mathf.Sin(angle * Mathf.Deg2Rad) * radius;
         circlePos = transform.rotation * circlePos;
         circlePos.y = Mathf.Cos(angle * Mathf.Deg2Rad) * radius;
+
         transform.position = startPos + circlePos;
     }
 
-    public void Random()
+    //Randomクラスと区別
+    public void RandoM()
     {
 
     }
@@ -216,10 +198,11 @@ public class PumpkinEnemy : MonoBehaviour {
         aroundPerSecond = aroundTime;
         aroundSpeed = 360.0f / aroundPerSecond;
 
-        var pos = playerTrans.position;
-        pos += Quaternion.Euler(0.0f, direction, 0.0f) * Vector3.forward * distance;
-        pos.y = height;
-        transform.position = pos;
+        startPos = playerTrans.position;
+        startPos.y += height;
+
+        RotDirSelect();
+        AroundMove();
     }
     public void AroundWave(float dis, float dir, float high, float aroundTime, float waveRad, float waveTime)
     {
@@ -234,10 +217,11 @@ public class PumpkinEnemy : MonoBehaviour {
         rotateSpeed = 360.0f / rotatePerSecond;
         angle = 0;
 
-        var pos = playerTrans.position;
-        pos += Quaternion.Euler(0.0f, direction, 0.0f) * Vector3.forward * distance;
-        pos.y = height;
-        transform.position = pos;
+        startPos = playerTrans.position;
+        startPos.y += height;
+
+        RotDirSelect();
+        AroundWaveMove();
     }
     public void Vertical(float dis, float dir, float high, float rotateTime, float rad)
     {
@@ -256,14 +240,12 @@ public class PumpkinEnemy : MonoBehaviour {
         var pos = playerTrans.position;
         pos += Quaternion.Euler(0.0f, direction, 0.0f) * Vector3.forward * distance;
         pos.y = height;
-        transform.position = pos;
+        startPos = pos;
 
-        startPos = transform.position;
+        transform.position = startPos;
+        transform.LookAt(playerTrans);
 
-        var circlePos = Vector3.zero;
-        circlePos.y = Mathf.Cos(angle * Mathf.Deg2Rad) * radius;
-        circlePos = transform.rotation * circlePos;
-        transform.position = startPos + circlePos;
+        VerticalMove();
     }
     public void Lateral(float dis, float dir, float high, float rotateTime, float rad)
     {
@@ -282,14 +264,12 @@ public class PumpkinEnemy : MonoBehaviour {
         var pos = playerTrans.position;
         pos += Quaternion.Euler(0.0f, direction, 0.0f) * Vector3.forward * distance;
         pos.y = height;
-        transform.position = pos;
+        startPos = pos;
 
-        startPos = transform.position;
+        transform.position = startPos;
+        transform.LookAt(playerTrans);
 
-        var circlePos = Vector3.zero;
-        circlePos.x = Mathf.Sin(angle * Mathf.Deg2Rad) * radius;
-        circlePos = transform.rotation * circlePos;
-        transform.position = startPos + circlePos;
+        LateralMove();
     }
     public void Circle(float dis, float dir, float high, float rotateTime, float rad)
     {
@@ -308,22 +288,38 @@ public class PumpkinEnemy : MonoBehaviour {
         var pos = playerTrans.position;
         pos += Quaternion.Euler(0.0f, direction, 0.0f) * Vector3.forward * distance;
         pos.y = height;
-        transform.position = pos;
+        startPos = pos;
 
-        startPos = transform.position;
+        transform.position = startPos;
+        transform.LookAt(playerTrans);
 
-        var circlePos = Vector3.zero;
-        circlePos.x = Mathf.Sin(angle * Mathf.Deg2Rad) * radius;
-        circlePos.y = Mathf.Cos(angle * Mathf.Deg2Rad) * radius;
-        circlePos = transform.rotation * circlePos;
-        transform.position = startPos + circlePos;
+        RotDirSelect();
+        CircleMove();
+    }
+    public void SetMeshAndScore(Mesh _mesh, int _score)
+    {
+        mesh.mesh = _mesh;
+        meshCollider.sharedMesh = _mesh;
+        pumpScore = _score;
+        //transform.position = Vector3.down * 1000;
+    }
+    //時計回りか反時計回りを決める
+    void RotDirSelect()
+    {
+        isTurnRight = false;
+        int rand = Random.Range(0, 2);
+        if (rand > 0)
+        {
+            isTurnRight = true;
+        }
     }
 
     void OnCollisionEnter(Collision col)
     {
         if (col.gameObject.tag == "Potato")
         {
-            CollisionPotato.Invoke();
+            //CollisionPotato.Invoke();
+            gameState.KillPumpkin(pumpScore);
             gameObject.SetActive(false);
         }
 

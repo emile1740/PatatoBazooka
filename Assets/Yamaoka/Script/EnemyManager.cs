@@ -4,7 +4,11 @@ using System.Collections.Generic;
 
 public class EnemyManager : SingletonMonoBehaviour<EnemyManager>
 {
-    [SerializeField]
+    [SerializeField, Header("かぼちゃの点数(大きい順)")]
+    private int[] pumpkinPoint;
+    [SerializeField, Header("かぼちゃの種類(大きい順)")]
+    private Mesh[] pumpkinMeshes;
+    [SerializeField, Header("")]
     private GameObject pumpkin;
     [SerializeField, Header("ゲーム中のかぼちゃの上限")]
     private int maxPumpkin;
@@ -113,7 +117,7 @@ public class EnemyManager : SingletonMonoBehaviour<EnemyManager>
         return null;
     }
 
-    void TypeSelect(PumpkinEnemy enem)
+    public void TypeSelect(PumpkinEnemy enem)
     {
         //ランダムは選ばれない：完成してないため
         int type = Random.Range(1, 6);
@@ -131,35 +135,34 @@ public class EnemyManager : SingletonMonoBehaviour<EnemyManager>
         {
             case 0:
                 Debug.Log("0");
-                enem.Random();
+                enem.RandoM();
                 break;
             case 1:
-                Debug.Log("1");
                 enem.Around(dis,dir,high,aroundTime);
                 break;
             case 2:
-                Debug.Log("2");
                 float waveRad = Random.Range(minWaveRadius, maxWaveRadius);
                 float waveTime = Random.Range(minWaveTime, maxWaveTime);
                 enem.AroundWave(dis, dir, high, aroundTime, waveRad, waveTime);
                 break;
             case 3:
-                Debug.Log("3");
                 enem.Vertical(dis,dir,high,spinTime,spinRad);
                 break;
             case 4:
-                Debug.Log("4");
                 enem.Lateral(dis,dir,high,spinTime,spinRad);
                 break;
             case 5:
-                Debug.Log("5");
                 enem.Circle(dis,dir,high,spinTime,spinRad);
                 break;
             default:
-                Debug.Log("Miss");
+                Debug.Log("EnemyTypeMissing");
                 break;
 
         }
+
+        //メッシュと点数を決める
+        type = Random.Range(0, 4);
+        enem.SetMeshAndScore(pumpkinMeshes[type], pumpkinPoint[type]);
 
     }
 }

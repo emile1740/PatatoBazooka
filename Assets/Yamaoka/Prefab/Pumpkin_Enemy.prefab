@@ -41,7 +41,7 @@ GameObject:
   - 114: {fileID: 114000013605351480}
   m_Layer: 0
   m_Name: Pumpkin_Enemy
-  m_TagString: Untagged
+  m_TagString: Pumpkin
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -148,13 +148,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d782a94ccfe493740bd89d7d350a472a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CollisionPotato:
-    m_PersistentCalls:
-      m_Calls: []
-    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
   playerTrans: {fileID: 0}
   aroundPerSecond: 4
   radius: 4
+  rotatePerSecond: 1
   moveType: 5
   isTurnRight: 0

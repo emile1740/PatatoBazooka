@@ -31,26 +31,47 @@ public class FileReader {
         }
     }
 
+    ///// <summary>
+    ///// CSVファイルから読み込み
+    ///// </summary>
+    //public void ReadCSVFile() {
+    //    int index = 0;
+    //    StreamReader reader = new StreamReader(RANKING_FILE_PATH);
+
+    //    // ストリームの末尾まで繰り返す
+    //    while (reader.Peek() > -1) {
+
+    //        // ファイルから一行読み込む
+    //        var lineValue = int.Parse(reader.ReadLine());
+
+    //        //読み込んだスコアよりも今回のスコアのほうが大きい場合、
+    //        //あとでそのランキングの場所に挿入するために、ランキングNoを保存しておく
+    //        Debug.Log("rankingNo " + result.rankingNo);
+    //        Debug.Log("lineValue " + lineValue + " score " + result.score);
+    //        if (result.rankingNo == result.rankingData.Length && lineValue < result.score)
+    //            result.rankingNo = index;
+
+    //        result.rankingData[index] = lineValue;
+    //        index++;
+    //    }
+
+    //    Debug.Log("success");
+    //    reader.Close();
+    //}
+
     /// <summary>
     /// CSVファイルから読み込み
     /// </summary>
     public void ReadCSVFile() {
+
         int index = 0;
         StreamReader reader = new StreamReader(RANKING_FILE_PATH);
 
         // ストリームの末尾まで繰り返す
         while (reader.Peek() > -1) {
 
-            // ファイルから一行読み込む
+            // ファイルから一行読み込みランキングデータの配列に代入していく
             var lineValue = int.Parse(reader.ReadLine());
-
-            //読み込んだスコアよりも今回のスコアのほうが大きい場合、
-            //あとでそのランキングの場所に挿入するために、ランキングNoを保存しておく
-            Debug.Log("rankingNo " + result.rankingNo);
-            Debug.Log("lineValue " + lineValue + " score " + result.score);
-            if (result.rankingNo == result.rankingData.Length && lineValue < result.score)
-                result.rankingNo = index;
-
             result.rankingData[index] = lineValue;
             index++;
         }
@@ -58,5 +79,4 @@ public class FileReader {
         Debug.Log("success");
         reader.Close();
     }
-
 }

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.UI;
-using System.IO;
 
 /// <summary>
 /// リザルト画面を処理
@@ -10,12 +10,11 @@ public class Result : MonoBehaviour {
 
     private const string RANKING_FILE_PATH = "Assets/Resources/ranking.csv";
 
+    [Header("パネルの拡大縮小させるマネージャー")]
+    public PanelScalingManager panelScalingManager;
+
     [Header("結果表示用パネル")]
     public RectTransform resultPanel;
-    private float expandTimer;
-    [Header("結果表示用パネルを拡大させる時間")]
-    public float MAX_EXPAND_TIME;
-
 
     [Header("共通用オブジェクト")]
     public Common common;
@@ -31,8 +30,8 @@ public class Result : MonoBehaviour {
 
     [Header("今回のスコア")]
     public int score;
-
-    private RectTransform storeRect;
+    [Header("今回のスコア用の親オブジェクト")]
+    public GameObject myScoreImageParent;
 
     [Header("ランキングデータのスクロールスピード")]
     public float scrollSpeed;
@@ -46,13 +45,16 @@ public class Result : MonoBehaviour {
     [Header("ランキングデータ")]
     public int[] rankingData = new int[100];
 
+    //スクロールの終了座標
+    private Vector3[] scrollTargetPosition = new Vector3[100];
+
     [Header("遷移ステータス")]
     public State state;
     public enum State {
         START,
         PANEL_EXPAND,
+        PANEL_REDUCTION,
         NOT_IN_RANKING,
-        PLAYSE,
         SCROLL,
         END
     }
@@ -63,9 +65,53 @@ public class Result : MonoBehaviour {
     [Header("ランクイン時のフレームの点滅間隔")]
     public float falshInterval;
 
+    private Dictionary<GameObject, RectTransform> rankingDataDic;
+
+    /// <summary>
+    /// 値の初期化
+    /// </summary>
+    public void initialize() {
+        state = State.START;
+        rankingNo = rankingData.Length;
+        Debug.Log("result - initialize");
+    }
+
     // Use this for initialization
     void Start() {
-        storeRect = rankingDataStore.GetComponent<RectTransform>();
+
+        //ランキングデータの読み込み
+        var fr = new FileReader(this);
+        fr.ReadCsv();
+
+    }
+
+    /// <summary>
+    /// アプリケーション終了時にランキングデータに変更があればCSVファイルに書き込む
+    /// </summary>
+    void OnApplicationQuit() {
+        //今回のスコアがランクインされていたら、順位を変更して書き換える
+        if (rankingNo != rankingData.Length) {
+            var fw = new FileWriter(this);
+            fw.WriteCsv();
+        }
+    }
+
+
+    /// <summary>
+    /// タイムアップでゲームが終了した時に呼ばれる
+    /// </summary>
+    public void callViewResult() {
+        initialize();
+
+        //resultPanel.gameObject.SetActive(true);
+
+        rankingDataInsertScore();
+        setMyScoreData();
+        
+        if(!panelScalingManager.panelDic.ContainsKey(resultPanel))
+            panelScalingManager.addPanelDictionary(resultPanel,this);
+
+        state = State.PANEL_EXPAND;
     }
 
     // Update is called once per frame
@@ -73,154 +119,150 @@ public class Result : MonoBehaviour {
 
         //とりあえず、エンターキーを押したら、パネルを拡大表示する
         if (state == State.START && Input.GetKeyDown(KeyCode.Return)) {
-            state = State.PANEL_EXPAND;
+            callViewResult();
 
         } else if (state == State.NOT_IN_RANKING) {
-            setRankingData();
+            //setRankingData();
 
+            //ランキングに変更があった場合
+            //ランクインした順位が中央に来るように移動量を計算し、
+            //その移動量分、他の順位も移動させる
             if (rankingNo != rankingData.Length) {
+
                 setRankingImage();
-                state = State.PLAYSE;
+
+                //ランクインしたオブジェクトを設定
+                var rank = (rankingData.Length - 1) - rankingNo;
+                inRankingObjectRect = rankingDataStore.transform.GetChild(rank).GetComponent<RectTransform>();
+
+                //ランクインしたスコア用のフレームを設定
+                countFrame.transform.SetParent(inRankingObjectRect);
+                countFrame.transform.localPosition = Vector3.zero;
+
+                setScrollTargetPosition();
+
+                //ドラムロール音を再生する
+                AudioManager.Instance.PlaySE("se_drumroll");
+                state = State.SCROLL;
             }
         }
 
         stateProcessing();
     }
 
+    /// <summary>
+    /// 遷移ステータスに対応する処理を行う
+    /// </summary>
     private void stateProcessing() {
 
         switch (state) {
 
             case State.PANEL_EXPAND:
                 //パネルの拡大表示
-                //var scale = resultPanel.localScale;
-                expandTimer += Time.deltaTime;
-                var scale = Mathf.Lerp(0f,1f, expandTimer / MAX_EXPAND_TIME);
-                resultPanel.localScale = new Vector3(scale, scale, scale);
-                if (scale == 1.0f) state = State.NOT_IN_RANKING;
-                break;
-            case State.NOT_IN_RANKING:
-                //ランキング内に入っていない場合
+                //resultPanelScaling(0.0f, 1.0f);
+                panelScalingManager.setPanelScaling(resultPanel,0.0f, 1.0f);
                 break;
 
-            case State.PLAYSE:
-                //ランキング内に入っている場合、ドラムロール音を再生する
-                AudioManager.Instance.PlaySE("se_drumroll");
-                state = State.SCROLL;
+            case State.PANEL_REDUCTION:
+                //パネルの縮小表示
+                //resultPanelScaling(1.0f, 0.0f);
+                //panelScalingManager.setPanelScaling(resultPanel, 1.0f, 0.0f);
+                break;
+
+            case State.NOT_IN_RANKING:
+                //ランキング内に入っていない場合
+                state = State.END;
                 break;
 
             case State.SCROLL:
                 //ランキング内に入っている場合、スクロール処理
                 scrollRanking();
                 break;
+
             case State.END:
                 //ランキング内に入っている場合、スクロール処理後にフレームを点滅させる
-                flashCountFrame();
+                //flashCountFrame();
                 break;
         }
     }
 
-/// <summary>
-/// ランキングデータを設定
-/// </summary>
-private void setRankingData() {
-
-        //ランキングデータの読み込み
-        rankingNo = rankingData.Length;
-
-        //ReadCsv();
-
-        var fr = new FileReader(this);
-        fr.ReadCsv();
-
-        //Debug.Log("ランキングデータの読み込み後 Ranking No " + rankingNo);
-
-        //今回のスコアがランクインされていたら、順位を変更して書き換える
-        if (rankingNo != rankingData.Length) {
-            //WriteCsv();
-            var fw = new FileWriter(this);
-            fw.WriteCsv();
-        }
-
+    /// <summary>
+    /// 拡大縮小演出が終了したら呼ばれる
+    /// </summary>
+    public void scalingEnd() {
+        //拡大するステータスから参照された場合はランキング設定へ移行
+        if (state == State.PANEL_EXPAND) state = State.NOT_IN_RANKING;
+        else if (state == State.PANEL_REDUCTION) state = State.END;
     }
 
-    ///// <summary>
-    ///// ランキングデータの読み込み
-    ///// </summary>
-    //private void ReadCsv() {
+    /// <summary>
+    /// 今回のスコアの画像を設定
+    /// </summary>
+    private void setMyScoreData() {
+        scoreConversion(myScoreImageParent.transform,score);
+    }
 
-    //    try {
-    //        ReadCSVFile();
-    //    } catch (System.Exception e) {
-    //        // ファイルを開くのに失敗したとき
-    //        System.Console.WriteLine(e.Message);
-    //        Debug.Log("failed");
+    /// <summary>
+    /// スコアに対応した画像に変換する
+    /// </summary>
+    /// <param name="tf"></param>
+    /// <param name="scoreTmp"></param>
+    private void scoreConversion(Transform tf,int scoreTmp) {
 
-    //        WriteCSVFile();
-    //        ReadCSVFile();
-    //    }
-    //}
+        for (int i = tf.childCount - 1; i >= 0; i--) {
 
-    ///// <summary>
-    ///// CSVファイルから読み込み
-    ///// </summary>
-    //private void ReadCSVFile() {
-    //    int index = 0;
-    //    StreamReader reader = new StreamReader(RANKING_FILE_PATH);
+            changeCountImage(tf.GetChild(i).GetComponent<Image>(), scoreTmp % 10);
+            scoreTmp /= 10;
 
-    //    // ストリームの末尾まで繰り返す
-    //    while (reader.Peek() > -1) {
+            //５桁分の数字の画像を変更する前に、計算するスコアが０になったら残りの画像を０にしてループを抜ける
+            if (scoreTmp == 0 && i > 0) {
+                while (i > 0) changeCountImage(tf.GetChild(--i).GetComponent<Image>(), 0);
+                break;
+            }
+        }
+    }
 
-    //        // ファイルから一行読み込む
-    //        var lineValue = int.Parse(reader.ReadLine());
+    /// <summary>
+    /// ランキングデータの配列に今回のスコアを追加する
+    /// </summary>
+    private void rankingDataInsertScore() {
 
-    //        //読み込んだスコアよりも今回のスコアのほうが大きい場合、
-    //        //あとでそのランキングの場所に挿入するために、ランキングNoを保存しておく
-    //        Debug.Log("rankingNo " + rankingNo);
-    //        Debug.Log("lineValue " + lineValue + " score " + score);
-    //        if (rankingNo == rankingData.Length && lineValue < score) rankingNo = index;
+        //読み込んだスコアよりも今回のスコアのほうが大きい場合、
+        //あとでそのランキングの場所に挿入するために、ランキングNoを保存しておく      
+        for (int i=0;i<rankingData.Length && rankingNo == rankingData.Length; i++) {
 
-    //        rankingData[index] = lineValue;
-    //        index++;
-    //    }
+            if (rankingData[i] < score) {
+                rankingNo = i;
+                for (int j = rankingNo; j < rankingData.Length - 1; j++) {
+                    rankingData[j + 1] = rankingData[j];
+                }
+                rankingData[rankingNo] = score;
+            }
+        }
+    }
 
-    //    Debug.Log("success");
-    //    reader.Close();
-    //}
-
-    ///// <summary>
-    ///// ランキングデータの書き込み
-    ///// </summary>
-    //private void WriteCsv() {
-
-    //    //今回ランクインされる順位以降の順位を１つ下げて、該当の順位に今回のスコアを入れる
-    //    for (int index = rankingData.Length - 2; index >= rankingNo; index--) {
-    //        if (rankingData[index + 1] != rankingData[index]) rankingData[index + 1] = rankingData[index];
-    //    }
-    //    rankingData[rankingNo] = score;
-
-    //    //書き込み処理
-    //    try {
-    //        WriteCSVFile();
-
-    //    } catch (System.Exception e) {
-    //        // ファイルを開くのに失敗したときエラーメッセージを表示
-    //        System.Console.WriteLine(e.Message);
-    //        Debug.Log("Write failed");
-    //    }
-    //}
 
     ///// <summary>
-    ///// CSVファイルへの書き込み
+    ///// ランキングデータを設定
     ///// </summary>
-    //private void WriteCSVFile() {
-    //    StreamWriter writer = new StreamWriter(RANKING_FILE_PATH, false);
+    //private void setRankingData() {
 
-    //    for (int i = 0; i < rankingData.Length; i++) writer.WriteLine(rankingData[i]);
+    //    //ランキングの読み込みタイミングはゲーム起動時に変更する必要がある
 
-    //    writer.Flush();
-    //    writer.Close();
-    //    Debug.Log("Write success");
+    //    //ランキングデータの読み込み
+    //    rankingNo = rankingData.Length;
+
+    //    var fr = new FileReader(this);
+    //    fr.ReadCsv();
+
+    //    ランキングの書き込みタイミングはゲーム終了時に変更する必要がある
+
+    //    //今回のスコアがランクインされていたら、順位を変更して書き換える
+    //    if (rankingNo != rankingData.Length) {
+    //        var fw = new FileWriter(this);
+    //        fw.WriteCsv();
+    //    }
+
     //}
 
     /// <summary>
@@ -228,14 +270,16 @@ private void setRankingData() {
     /// </summary>
     private void setRankingImage() {
 
-        //１００件分のランキングデータを上方向に生成していく
+        //１００件分のランキングデータを順番に参照
         for (int index = 0; index < rankingData.Length; index++) {
-            var pos = rankingImagePrefab.transform.position;
-            pos.y += (rankingImagePrefab.GetComponent<RectTransform>().sizeDelta.y + rankingImage_AdjustPosition) * index;
-            var rankingImageObj = (GameObject)Instantiate(rankingImagePrefab,pos,Quaternion.identity);
+            //var pos = rankingImagePrefab.transform.position;
+            //pos.y += (rankingImagePrefab.GetComponent<RectTransform>().sizeDelta.y + rankingImage_AdjustPosition) * index;
+            //var rankingImageObj = (GameObject)Instantiate(rankingImagePrefab,pos,Quaternion.identity);
 
-            rankingImageObj.transform.SetParent(rankingDataStore.transform,false);
-            rankingImageObj.name = rankingImagePrefab.name + "_" + index;
+            //rankingImageObj.transform.SetParent(rankingDataStore.transform,false);
+            //rankingImageObj.name = rankingImagePrefab.name + "_" + index;
+
+            var rankingImageObj = rankingDataStore.transform.GetChild(index).gameObject;
 
             //ランキング順位の表示
             var rank = rankingData.Length - index;
@@ -246,12 +290,6 @@ private void setRankingData() {
             //ランキング順位画像の設定
             setRankingCountImage(index, rankingImageObj ,rank);
         }
-
-        inRankingObjectRect = rankingDataStore.transform.GetChild((rankingData.Length - 1) - rankingNo).GetComponent<RectTransform>();
-        //changeMyScoreImageColor(inRankingObjectRect.FindChild("RankImage"));
-        //changeMyScoreImageColor(inRankingObjectRect.FindChild("ScoreImage"));
-        countFrame.transform.SetParent(inRankingObjectRect);
-        countFrame.transform.localPosition = Vector3.zero;
     }
 
     /// <summary>
@@ -260,20 +298,8 @@ private void setRankingData() {
     /// <param name="rankingImageObj"></param>
     /// <param name="scoreTmp"></param>
     private void setRankingScoreImage(GameObject rankingImageObj, int scoreTmp) {
-
         var scoreImage = rankingImageObj.transform.FindChild("ScoreImage");
-
-        for (int i = scoreImage.childCount - 1; i >= 0; i--) {
-
-            changeCountImage(scoreImage.GetChild(i).GetComponent<Image>(), scoreTmp % 10);
-            scoreTmp /= 10;
-
-            //５桁分の数字の画像を変更する前に、計算するスコアが０になったら残りの画像を０にしてループを抜ける
-            if (scoreTmp == 0 && i > 0) {
-                while (i > 0) changeCountImage(scoreImage.GetChild(--i).GetComponent<Image>(), 0);
-                break;
-            }
-        }
+        scoreConversion(scoreImage, scoreTmp);
     }
 
     /// <summary>
@@ -322,34 +348,24 @@ private void setRankingData() {
         image.sprite = common.count[countIndex];
     }
 
-    ///// <summary>
-    ///// ランキングに入った場合、自分のスコアが分かりやすいように色を変更する
-    ///// </summary>
-    ///// <param name="tf"></param>
-    //private void changeMyScoreImageColor(Transform tf) {
-    //    foreach(Transform t in tf) t.GetComponent<Image>().color = new Color(1,0,0);
-    //}
-
     /// <summary>
-    /// ランキングデータのスクロール処理
+    /// スクロールの終了座標を設定
     /// </summary>
-    private void scrollRanking() {
+    private void setScrollTargetPosition() {
 
-        ////格納フォルダの座標を動かす
-        //var pos = storeRect.transform.position;
-        //pos.y -= Time.deltaTime * scrollSpeed;
-        //var nextPos = pos;
+        Vector3 distance;
+        if (rankingNo < 2) {
+            //rankingNo < 2 ランキング順位２位以上の場合、３位と同じ移動量を設定する
+            distance = rankingDataStore.transform.GetChild((rankingData.Length - 1) - 2).localPosition - countFrame.transform.localPosition;
 
+        } else if (rankingNo > (rankingData.Length - 1) - 2) {
+            //rankingNo > (rankingData.Length - 1) - 2 (97) ランキング順位９９位以上の場合、９８位と同じ移動量を設定する
+            distance = rankingDataStore.transform.GetChild(2).localPosition - countFrame.transform.localPosition;
+        } else {
+            distance = inRankingObjectRect.localPosition - countFrame.transform.localPosition;
+        }
 
-        ////対象のオブジェクト
-        //if(inRankingObjectRect.localPosition = )
-
-
-
-
-
-
-
+<<<<<<< HEAD
         ////考え方を変える必要がある
         for (int index = 0; index < rankingData.Length; index++)
         {
@@ -393,6 +409,44 @@ private void setRankingData() {
                 break;
             }
         }
+=======
+        for (int i = 0; i < rankingData.Length; i++) {
+            scrollTargetPosition[i] = rankingDataStore.transform.GetChild(i).localPosition - distance;
+        }
+    }
+
+    /// <summary>
+    /// ランキングオブジェクトのスクロール処理
+    /// </summary>
+    private void scrollRanking() {
+
+        //各オブジェクトを終了座標まで移動させる
+        for (int i=0;i<rankingData.Length ;i++) {
+            var child = rankingDataStore.transform.GetChild(i);
+            child.localPosition = Vector3.MoveTowards(child.localPosition,scrollTargetPosition[i],Time.deltaTime * scrollSpeed);
+        }
+        //各オブジェクトが終了座標まで移動したかをチェックし、移動していたらスクロール終了処理
+        if (checkScrollTarget()) {
+            AudioManager.Instance.StopSE();
+            AudioManager.Instance.PlaySE("se_cymbal");
+            state = State.END;
+        }
+    }
+
+    /// <summary>
+    /// 全てのランキングオブジェクトが終了座標まで移動したどうかをチェック（全て終了していたらtrueを取得）
+    /// </summary>
+    /// <returns></returns>
+    private bool checkScrollTarget() {
+
+        for (int i = 0; i < rankingData.Length; i++) {
+            var child = rankingDataStore.transform.GetChild(i);
+            if (!Mathf.Approximately(child.localPosition.y, scrollTargetPosition[i].y)) {
+                return false;
+            }
+        }
+        return true;
+>>>>>>> 17c4356baf0f2a0b9dcfbc1ae590d446cd066891
     }
 
     /// <summary>

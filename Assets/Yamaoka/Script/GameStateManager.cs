@@ -6,6 +6,10 @@ public class GameStateManager : MonoBehaviour {
 
     [Header("リザルト")]
     public Result result;
+    [Header("パネルの拡大縮小させるマネージャー")]
+    public PanelScalingManager panelScalingManager;
+
+    private bool onceResult;
 
     public enum Status
     {
@@ -55,7 +59,6 @@ public class GameStateManager : MonoBehaviour {
                 GameUpdate();
                 break;
             case Status.Result:
-
                 break;
             case Status.Ranking:
 
@@ -128,15 +131,17 @@ public class GameStateManager : MonoBehaviour {
         timeLimitText.text = "";
         nowState = Status.Result;
         result.score = pumpkinCount;
-
         startButton.SetActive(true);
+        result.callViewResult();
     }
 
     void GameUpdate()
     {
+
         timer -= Time.deltaTime;
-        if (timer < 0.0f)
+        if (timer < 0.0f && !onceResult)
         {
+            onceResult = true;
             timeLimitText.text = "0";
             GoResult();
             return;
@@ -152,13 +157,18 @@ public class GameStateManager : MonoBehaviour {
 
     public void GoGame()
     {
-        timer = gameLimit;
-        pumpkinCount = 0;
-        startButton.SetActive(false);
-        //開始前のカウントダウン
-        //引数はカウントダウンの時間
-        //数値は未定
-        StartCoroutine(GameStartCountDown(3));
+        if(nowState == Status.Result) {
+            result.state = Result.State.PANEL_REDUCTION;
+        } else {
+            GoGameInitialize();
+        }
+        //timer = gameLimit;
+        //pumpkinCount = 0;
+        //startButton.SetActive(false);
+        ////開始前のカウントダウン
+        ////引数はカウントダウンの時間
+        ////数値は未定
+        //StartCoroutine(GameStartCountDown(3));
     }
     public void GoTitle()
     {
@@ -175,6 +185,18 @@ public class GameStateManager : MonoBehaviour {
     public void GoRanking()
     {
         nowState = Status.Ranking;
+    }
+
+
+    public void GoGameInitialize() {
+        onceResult = false;
+        timer = gameLimit;
+        pumpkinCount = 0;
+        startButton.SetActive(false);
+        //開始前のカウントダウン
+        //引数はカウントダウンの時間
+        //数値は未定
+        StartCoroutine(GameStartCountDown(3));
     }
 
 }

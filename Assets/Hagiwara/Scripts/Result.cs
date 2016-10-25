@@ -10,6 +10,9 @@ public class Result : MonoBehaviour {
 
     private const string RANKING_FILE_PATH = "Assets/Resources/ranking.csv";
 
+    [Header("ゲーム全体のステータスマネージャー")]
+    public GameStateManager gameStateManager;
+
     [Header("パネルの拡大縮小させるマネージャー")]
     public PanelScalingManager panelScalingManager;
 
@@ -166,7 +169,7 @@ public class Result : MonoBehaviour {
             case State.PANEL_REDUCTION:
                 //パネルの縮小表示
                 //resultPanelScaling(1.0f, 0.0f);
-                //panelScalingManager.setPanelScaling(resultPanel, 1.0f, 0.0f);
+                panelScalingManager.setPanelScaling(resultPanel, 1.0f, 0.0f);
                 break;
 
             case State.NOT_IN_RANKING:
@@ -189,10 +192,15 @@ public class Result : MonoBehaviour {
     /// <summary>
     /// 拡大縮小演出が終了したら呼ばれる
     /// </summary>
-    public void scalingEnd() {
-        //拡大するステータスから参照された場合はランキング設定へ移行
-        if (state == State.PANEL_EXPAND) state = State.NOT_IN_RANKING;
-        else if (state == State.PANEL_REDUCTION) state = State.END;
+    public void PanelScalingEnd() {
+        //拡大縮小演出が終了したら前のステータスの状態によって次の遷移先を設定
+        if (state == State.PANEL_EXPAND) {
+            state = State.NOT_IN_RANKING;
+        } else if (state == State.PANEL_REDUCTION) {
+            state = State.END;
+            gameStateManager.GoGameInitialize();
+        }
+        panelScalingManager.initialize();
     }
 
     /// <summary>

@@ -985,7 +985,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   panelScalingManager: {fileID: 1977022966}
   resultPanel: {fileID: 1202752522}
-  MAX_EXPAND_TIME: 0.2
   common: {fileID: 65318729}
   rankingImagePrefab: {fileID: 1000012792892908, guid: 23ad432a19326734f8e868a9a7e1b21a,
     type: 2}
@@ -1161,6 +1160,56 @@ MonoBehaviour:
   m_Script: {fileID: -146154839, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &1178730924
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 1178730926}
+  - 114: {fileID: 1178730925}
+  m_Layer: 0
+  m_Name: GameStatus
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1178730925
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1178730924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1703359bb4f73ac49b76e383f240c341, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  result: {fileID: 0}
+  nowState: 0
+  gameLimit: 30
+  pumpkinCount: 0
+  startButton: {fileID: 0}
+  enemy: {fileID: 1000013326943942, guid: e2042c3cf985f2a44aa4acd5ba0661a7, type: 2}
+  pumpNum: 60
+  radius: 15
+  countDownText: {fileID: 0}
+  timeLimitText: {fileID: 0}
+--- !u!4 &1178730926
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1178730924}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 10
 --- !u!1 &1202752521
 GameObject:
   m_ObjectHideFlags: 0

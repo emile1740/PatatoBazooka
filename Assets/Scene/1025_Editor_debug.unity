@@ -41174,6 +41174,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d173bd5d5ab8324b841d9c5c0e2b44f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gameStateManager: {fileID: 1178730925}
   panelScalingManager: {fileID: 1977022966}
   resultPanel: {fileID: 1202752522}
   common: {fileID: 65318729}
@@ -47939,6 +47940,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   result: {fileID: 983505438}
+  panelScalingManager: {fileID: 1977022966}
   nowState: 0
   gameLimit: 30
   pumpkinCount: 0

@@ -6,7 +6,7 @@ public class PanelScalingManager : MonoBehaviour {
     
     private float scalingTimer;
     [Header("結果表示用パネルを拡大させる時間")]
-    public float MAX_EXPAND_TIME;
+    public float MAX_SCALING_TIME;
 
     public Dictionary<RectTransform,Component> panelDic;
 
@@ -19,7 +19,6 @@ public class PanelScalingManager : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        initialize();
         panelDic = new Dictionary<RectTransform, Component>();
     }
 	
@@ -45,11 +44,12 @@ public class PanelScalingManager : MonoBehaviour {
     /// <param name="ed"></param>
     public void setPanelScaling(RectTransform panel, float st, float ed) {
         scalingTimer += Time.deltaTime;
-        var scale = Mathf.Lerp(st, ed, scalingTimer / MAX_EXPAND_TIME);
+        var scale = Mathf.Lerp(st, ed, scalingTimer / MAX_SCALING_TIME);
         panel.localScale = new Vector3(scale, scale, scale);
 
         if (scale == ed) {
-            panelDic[panel].SendMessage("scalingEnd");
+
+            panelDic[panel].SendMessage("PanelScalingEnd");
         }
     }
 }

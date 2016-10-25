@@ -365,51 +365,6 @@ public class Result : MonoBehaviour {
             distance = inRankingObjectRect.localPosition - countFrame.transform.localPosition;
         }
 
-<<<<<<< HEAD
-        ////考え方を変える必要がある
-        for (int index = 0; index < rankingData.Length; index++)
-        {
-            var child = rankingDataStore.transform.GetChild(index);
-            var pos = child.localPosition;
-            pos.y -= Time.deltaTime * scrollSpeed;
-            child.localPosition = pos;
-
-            Transform stopTargetObject = null;
-            if (rankingNo >= 3 && rankingNo <= (rankingData.Length - 1) - 2)
-            {
-                if (inRankingObjectRect == child)
-                {
-                    stopTargetObject = child;
-                }
-            }
-            else
-            {
-
-                if (rankingNo < 3)
-                {
-                    //ランキングに入った順位が１位か２位の場合
-                    stopTargetObject = rankingDataStore.transform.GetChild((rankingData.Length - 1) - 2);
-                }
-                else if (rankingNo > (rankingData.Length - 1) - 2)
-                {
-                    //ランキングに入った順位が９９位か１００位の場合
-                    stopTargetObject = rankingDataStore.transform.GetChild(2);
-                }
-
-            }
-            if (stopTargetObject != null && stopTargetObject.localPosition.y <= 0.0f)
-            {
-                var pos_2 = stopTargetObject.transform.localPosition;
-                pos_2.y = 0.0f;
-                stopTargetObject.transform.localPosition = pos_2;
-
-                AudioManager.Instance.StopSE();
-                AudioManager.Instance.PlaySE("se_cymbal");
-                state = State.END;
-                break;
-            }
-        }
-=======
         for (int i = 0; i < rankingData.Length; i++) {
             scrollTargetPosition[i] = rankingDataStore.transform.GetChild(i).localPosition - distance;
         }
@@ -446,7 +401,6 @@ public class Result : MonoBehaviour {
             }
         }
         return true;
->>>>>>> 17c4356baf0f2a0b9dcfbc1ae590d446cd066891
     }
 
     /// <summary>

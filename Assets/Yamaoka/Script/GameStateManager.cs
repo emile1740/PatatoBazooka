@@ -3,6 +3,10 @@ using UnityEngine.UI;
 using System.Collections;
 
 public class GameStateManager : MonoBehaviour {
+
+    [Header("リザルト")]
+    public Result result;
+
     public enum Status
     {
         Title,
@@ -123,6 +127,8 @@ public class GameStateManager : MonoBehaviour {
         countDownText.text = "";
         timeLimitText.text = "";
         nowState = Status.Result;
+        result.score = pumpkinCount;
+
         startButton.SetActive(true);
     }
 

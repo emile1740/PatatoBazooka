@@ -22,6 +22,16 @@ public class PumpkinEnemy : MonoBehaviour {
     private float distance;
     private float direction;
     private float height;
+
+    //芋が当たったときのノックバック
+    private Vector3 deadVec;
+    private bool isDead = false;
+    private float deadTimer = 0.0f;
+    [SerializeField,Header("芋が当たってから消えるまでの時間")]
+    private float vanishTime;
+    [SerializeField, Header("芋が当たってからかぼちゃに発生する重力")]
+    private float gravity;
+
 //ここまで共通
     
 //周の動き共通
@@ -79,6 +89,12 @@ public class PumpkinEnemy : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
+        if (isDead)
+        {
+            DeadMove();
+            return;
+        }
+
         switch (moveType)
         {
             case MoveType.random:
@@ -105,7 +121,22 @@ public class PumpkinEnemy : MonoBehaviour {
         }
 	}
 
+    //芋が当たったあとの動き
+    void DeadMove()
+    {
+        deadTimer += Time.deltaTime;
+        var vec = deadVec;
+        vec.y -= gravity * deadTimer;
+        transform.position += vec * Time.deltaTime;
 
+        if (deadTimer>vanishTime)
+        {
+            //煙出現
+
+            gameObject.SetActive(false);
+            deadTimer = 0.0f;
+        }
+    }
 
     //ランダムな動き
     void RandomMove()

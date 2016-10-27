@@ -3,6 +3,9 @@ using System.Collections;
 
 public class ExplosionManager : MonoBehaviour {
 
+    [Header("ゲーム全体のステータスマネージャー")]
+    public GameStateManager gameStateManager;
+
     [Header("花火エフェクトのプレハブ配列")]
     public GameObject[] explosionPrefabList;
 
@@ -29,16 +32,18 @@ public class ExplosionManager : MonoBehaviour {
     void Start () {
         randomTimer = Random.Range(MIN_RANDOM_TIMER, MAX_RANDOM_TIMER);
     }
-	
-	// Update is called once per frame
-	void Update () {
 
-        randomTimer -= Time.deltaTime;
+    // Update is called once per frame
+    void Update() {
 
-        if (randomTimer <= 0.0f) {
-            randomTimer = Random.Range(MIN_RANDOM_TIMER, MAX_RANDOM_TIMER);
+        if (gameStateManager.nowState == GameStateManager.Status.Result) {
+            randomTimer -= Time.deltaTime;
 
-            generateExplosion();
+            if (randomTimer <= 0.0f) {
+                randomTimer = Random.Range(MIN_RANDOM_TIMER, MAX_RANDOM_TIMER);
+
+                generateExplosion();
+            }
         }
     }
 

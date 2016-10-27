@@ -8,8 +8,6 @@ using UnityEngine.UI;
 /// </summary>
 public class Result : MonoBehaviour {
 
-    private const string RANKING_FILE_PATH = "Assets/Resources/ranking.csv";
-
     [Header("ゲーム全体のステータスマネージャー")]
     public GameStateManager gameStateManager;
 
@@ -63,12 +61,10 @@ public class Result : MonoBehaviour {
     }
 
     [Header("ランクイン時のフレーム")]
-    public Image countFrame;
-    private float countFrameTime;
-    [Header("ランクイン時のフレームの点滅間隔")]
-    public float falshInterval;
+    public GameObject countFrame;
+    private GameObject myScoreText;
 
-    private Dictionary<GameObject, RectTransform> rankingDataDic;
+    private Dictionary<GameObject, Vector3> rankingDataDic;
 
     /// <summary>
     /// 値の初期化
@@ -76,7 +72,42 @@ public class Result : MonoBehaviour {
     public void initialize() {
         state = State.START;
         rankingNo = rankingData.Length;
+
+        countFrame.SetActive(true);
+        myScoreImageParent.SetActive(true);
+        myScoreText.SetActive(true);
+
+        //各ランキングデータのオブジェクトを初期位置に戻す
+        foreach (Transform child in rankingDataStore.transform) {
+            child.localPosition = rankingDataDic[child.gameObject];
+        }
+
         Debug.Log("result - initialize");
+    }
+
+    /// <summary>
+    /// タイトル画面からランキング画面に遷移してきた時に呼ばれる
+    /// </summary>
+    public void initialize_ComeTitle() {
+        state = State.START;
+        rankingNo = 0;
+        countFrame.SetActive(false);
+        myScoreImageParent.SetActive(false);
+
+        myScoreText.SetActive(false);
+
+        float firstPos = 200.0f;
+        int upperLevel = 5;
+        Vector3 pos = Vector3.zero;
+
+        //上位５件分のデータの座標を設定する
+        for (int i=0;i< upperLevel; i++) {
+            var child = rankingDataStore.transform.GetChild(99 - i);
+            setRankingScoreImage(child.gameObject, rankingData[i]);
+
+            pos.y = firstPos - i * (child.GetComponent<RectTransform>().sizeDelta.y + rankingImage_AdjustPosition);
+            child.localPosition = pos;
+        }
     }
 
     // Use this for initialization
@@ -85,6 +116,16 @@ public class Result : MonoBehaviour {
         //ランキングデータの読み込み
         var fr = new FileReader(this);
         fr.ReadCsv();
+
+        //for(int i=0;i<rankingDataStore ;int++)
+        rankingDataDic = new Dictionary<GameObject, Vector3>();
+
+        //各ランキングデータのオブジェクトの初期位置を保存しておく
+        foreach (Transform child in rankingDataStore.transform) {
+            rankingDataDic.Add(child.gameObject, child.localPosition);
+        }
+
+        myScoreText = resultPanel.FindChild("TEXTUIPanel/MyScoreText").gameObject;
 
     }
 
@@ -106,8 +147,6 @@ public class Result : MonoBehaviour {
     public void callViewResult() {
         initialize();
 
-        //resultPanel.gameObject.SetActive(true);
-
         rankingDataInsertScore();
         setMyScoreData();
         
@@ -117,17 +156,31 @@ public class Result : MonoBehaviour {
         state = State.PANEL_EXPAND;
     }
 
+
+    /// <summary>
+    /// タイトルからランキングを選んだ時に呼ばれる
+    /// </summary>
+    public void callViewResult_ComeTitle() {
+        initialize_ComeTitle();
+
+        if (!panelScalingManager.panelDic.ContainsKey(resultPanel))
+            panelScalingManager.addPanelDictionary(resultPanel, this);
+
+        state = State.PANEL_EXPAND;
+    }
+
     // Update is called once per frame
     void Update() {
 
-        //とりあえず、エンターキーを押したら、パネルを拡大表示する
+        //デバッグ用、エンターキーを押したら、パネルを拡大表示する
         if (state == State.START && Input.GetKeyDown(KeyCode.Return)) {
-            callViewResult();
+            //callViewResult();
+            callViewResult_ComeTitle();
+        }
 
-        } else if (state == State.NOT_IN_RANKING) {
-            //setRankingData();
+        if (state == State.NOT_IN_RANKING) {
 
-            //ランキングに変更があった場合
+            //ランキングに変更があった場合、
             //ランクインした順位が中央に来るように移動量を計算し、
             //その移動量分、他の順位も移動させる
             if (rankingNo != rankingData.Length) {
@@ -162,13 +215,11 @@ public class Result : MonoBehaviour {
 
             case State.PANEL_EXPAND:
                 //パネルの拡大表示
-                //resultPanelScaling(0.0f, 1.0f);
                 panelScalingManager.setPanelScaling(resultPanel,0.0f, 1.0f);
                 break;
 
             case State.PANEL_REDUCTION:
                 //パネルの縮小表示
-                //resultPanelScaling(1.0f, 0.0f);
                 panelScalingManager.setPanelScaling(resultPanel, 1.0f, 0.0f);
                 break;
 
@@ -181,11 +232,6 @@ public class Result : MonoBehaviour {
                 //ランキング内に入っている場合、スクロール処理
                 scrollRanking();
                 break;
-
-            case State.END:
-                //ランキング内に入っている場合、スクロール処理後にフレームを点滅させる
-                //flashCountFrame();
-                break;
         }
     }
 
@@ -195,12 +241,17 @@ public class Result : MonoBehaviour {
     public void PanelScalingEnd() {
         //拡大縮小演出が終了したら前のステータスの状態によって次の遷移先を設定
         if (state == State.PANEL_EXPAND) {
+
+            //ゲーム画面から呼ばれた場合はランキングデータの設定に移行
             state = State.NOT_IN_RANKING;
+
+            //タイトル画面から呼ばれた場合は
+            state = State.END;
+
         } else if (state == State.PANEL_REDUCTION) {
             state = State.END;
             gameStateManager.GoGameInitialize();
         }
-        panelScalingManager.initialize();
     }
 
     /// <summary>
@@ -241,37 +292,13 @@ public class Result : MonoBehaviour {
 
             if (rankingData[i] < score) {
                 rankingNo = i;
-                for (int j = rankingNo; j < rankingData.Length - 1; j++) {
-                    rankingData[j + 1] = rankingData[j];
+                for (int j = rankingData.Length - 1; j > rankingNo; j--) {
+                    rankingData[j] = rankingData[j-1];
                 }
                 rankingData[rankingNo] = score;
             }
         }
     }
-
-
-    ///// <summary>
-    ///// ランキングデータを設定
-    ///// </summary>
-    //private void setRankingData() {
-
-    //    //ランキングの読み込みタイミングはゲーム起動時に変更する必要がある
-
-    //    //ランキングデータの読み込み
-    //    rankingNo = rankingData.Length;
-
-    //    var fr = new FileReader(this);
-    //    fr.ReadCsv();
-
-    //    ランキングの書き込みタイミングはゲーム終了時に変更する必要がある
-
-    //    //今回のスコアがランクインされていたら、順位を変更して書き換える
-    //    if (rankingNo != rankingData.Length) {
-    //        var fw = new FileWriter(this);
-    //        fw.WriteCsv();
-    //    }
-
-    //}
 
     /// <summary>
     /// ランキング順位の生成
@@ -279,24 +306,14 @@ public class Result : MonoBehaviour {
     private void setRankingImage() {
 
         //１００件分のランキングデータを順番に参照
-        for (int index = 0; index < rankingData.Length; index++) {
-            //var pos = rankingImagePrefab.transform.position;
-            //pos.y += (rankingImagePrefab.GetComponent<RectTransform>().sizeDelta.y + rankingImage_AdjustPosition) * index;
-            //var rankingImageObj = (GameObject)Instantiate(rankingImagePrefab,pos,Quaternion.identity);
-
-            //rankingImageObj.transform.SetParent(rankingDataStore.transform,false);
-            //rankingImageObj.name = rankingImagePrefab.name + "_" + index;
-
-            var rankingImageObj = rankingDataStore.transform.GetChild(index).gameObject;
+        for (int i = 0; i < rankingData.Length; i++) {
+            var rankingImageObj = rankingDataStore.transform.GetChild(i).gameObject;
 
             //ランキング順位の表示
-            var rank = rankingData.Length - index;
+            var rank = rankingData.Length - i;
 
             //ランキングスコア画像の設定
             setRankingScoreImage(rankingImageObj, rankingData[rank - 1]);
-
-            //ランキング順位画像の設定
-            setRankingCountImage(index, rankingImageObj ,rank);
         }
     }
 
@@ -308,43 +325,6 @@ public class Result : MonoBehaviour {
     private void setRankingScoreImage(GameObject rankingImageObj, int scoreTmp) {
         var scoreImage = rankingImageObj.transform.FindChild("ScoreImage");
         scoreConversion(scoreImage, scoreTmp);
-    }
-
-    /// <summary>
-    /// ランキング順位画像の設定
-    /// </summary>
-    /// <param name="index"></param>
-    /// <param name="rankingImageObj"></param>
-    /// <param name="rank"></param>
-    private void setRankingCountImage(int index,GameObject rankingImageObj, int rank) {
-
-        var rankImage = rankingImageObj.transform.FindChild("RankImage");
-        var rankTmp = rank - 1;
-
-        //１の位は必ず表示
-        viewRankingImage(rankImage.GetChild(2).GetComponent<Image>(), rank % 10);
-        rank /= 10;
-
-        //ランキング１００位の場合、１０の位、１００の位を表示
-        if (rankTmp == (rankingData.Length - 1)) {
-            viewRankingImage(rankImage.GetChild(0).GetComponent<Image>(), 1);
-            viewRankingImage(rankImage.GetChild(1).GetComponent<Image>(), 0);
-        } else {
-            //ランキング１０位以上の場合、１０の位を表示
-            if (rankTmp >= 9) {
-                viewRankingImage(rankImage.GetChild(1).GetComponent<Image>(), rank % 10);
-            }
-        }
-    }
-
-    /// <summary>
-    /// ランキング順位を表示
-    /// </summary>
-    /// <param name="image"></param>
-    /// <param name="countIndex"></param>
-    private void viewRankingImage(Image image, int countIndex) {
-        image.enabled = true;
-        changeCountImage(image, countIndex);
     }
 
     /// <summary>
@@ -373,6 +353,8 @@ public class Result : MonoBehaviour {
             distance = inRankingObjectRect.localPosition - countFrame.transform.localPosition;
         }
 
+        //各ランキングデータのオブジェクトに終了座標を設定する
+        //終了座標 = 現在の場所 - 目的地までの移動量
         for (int i = 0; i < rankingData.Length; i++) {
             scrollTargetPosition[i] = rankingDataStore.transform.GetChild(i).localPosition - distance;
         }
@@ -409,18 +391,5 @@ public class Result : MonoBehaviour {
             }
         }
         return true;
-    }
-
-    /// <summary>
-    /// ランクインしたスコアのフレームを点滅させる
-    /// </summary>
-    private void flashCountFrame() {
-        
-        countFrameTime += Time.deltaTime;
-        if((int)((countFrameTime + falshInterval) % 2) == 0) {
-            countFrame.enabled = true;
-        }else {
-            countFrame.enabled = false;
-        }
     }
 }

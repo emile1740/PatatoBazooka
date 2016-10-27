@@ -48,8 +48,8 @@ public class PanelScalingManager : MonoBehaviour {
         panel.localScale = new Vector3(scale, scale, scale);
 
         if (scale == ed) {
-
             panelDic[panel].SendMessage("PanelScalingEnd");
+            initialize();
         }
     }
 }

@@ -19,8 +19,8 @@ public class GameStateManager : MonoBehaviour {
         Ranking
     }
 
-    [SerializeField,Header("現在のシーン")]
-    private Status nowState;
+    [Header("現在のシーン")]
+    public Status nowState;
 
     [SerializeField,Header("制限時間")]
     private float gameLimit;

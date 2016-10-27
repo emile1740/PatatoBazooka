@@ -15,10 +15,10 @@ public class ImoBullet : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-
+        //transform.Rotate()
         if (transform.position.y < -10.0f)
         {
-            Destroy(gameObject);
+            gameObject.SetActive(false);
         }
 	
 	}

@@ -24,6 +24,7 @@ public class PumpkinEnemy : MonoBehaviour {
     private float height;
 
     //芋が当たったときのノックバック
+    [SerializeField]
     private Vector3 deadVec;
     private bool isDead = false;
     private float deadTimer = 0.0f;
@@ -31,6 +32,10 @@ public class PumpkinEnemy : MonoBehaviour {
     private float vanishTime;
     [SerializeField, Header("芋が当たってからかぼちゃに発生する重力")]
     private float gravity;
+
+    //子のかぼちゃを回転させるために使う
+    private Transform modelTrans;
+    private Quaternion modelStartLocalRot;
 
 //ここまで共通
     
@@ -81,8 +86,13 @@ public class PumpkinEnemy : MonoBehaviour {
         //一周にかける時間から速度を算出
         aroundSpeed = 360.0f / aroundPerSecond;
 
+        //再利用時に種類を変えるため
         mesh = transform.GetChild(0).GetComponent<MeshFilter>();
         meshCollider = GetComponent<MeshCollider>();
+
+        //消滅時にモデルを回転させるため
+        modelTrans = transform.GetChild(0);
+        modelStartLocalRot = modelTrans.localRotation;
 
         gameObject.SetActive(false);
 	}
@@ -127,7 +137,9 @@ public class PumpkinEnemy : MonoBehaviour {
         deadTimer += Time.deltaTime;
         var vec = deadVec;
         vec.y -= gravity * deadTimer;
-        transform.position += vec * Time.deltaTime;
+        transform.position += transform.rotation * vec * Time.deltaTime;
+
+        modelTrans.Rotate(Vector3.back * 90.0f * Time.deltaTime);
 
         if (deadTimer>vanishTime)
         {
@@ -135,6 +147,7 @@ public class PumpkinEnemy : MonoBehaviour {
 
             gameObject.SetActive(false);
             deadTimer = 0.0f;
+            isDead = false;
         }
     }
 
@@ -343,15 +356,20 @@ public class PumpkinEnemy : MonoBehaviour {
         {
             isTurnRight = true;
         }
+
+        //かぼちゃの角度を直す
+        modelTrans.localRotation = modelStartLocalRot;
+
     }
 
     void OnCollisionEnter(Collision col)
     {
-        if (col.gameObject.tag == "Potato")
+        if (col.gameObject.tag == "Potato" && !isDead)
         {
             //CollisionPotato.Invoke();
             gameState.KillPumpkin(pumpScore);
-            gameObject.SetActive(false);
+            isDead = true;
+            //gameObject.SetActive(false);
         }
 
     }

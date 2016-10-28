@@ -149,6 +149,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerTrans: {fileID: 0}
+  deadVec: {x: 0, y: 8, z: -25}
+  vanishTime: 1
+  gravity: 9.81
   aroundPerSecond: 4
   radius: 4
   rotatePerSecond: 1

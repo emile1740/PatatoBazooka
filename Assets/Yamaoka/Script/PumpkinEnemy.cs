@@ -37,6 +37,12 @@ public class PumpkinEnemy : MonoBehaviour {
     private Transform modelTrans;
     private Quaternion modelStartLocalRot;
 
+    //消滅時に煙を発生
+    [SerializeField,Header("煙のパーティクル")]
+    private GameObject vanishSmokeParticle;
+    [SerializeField,Header("煙をどのくらい前に出すか")]
+    private float forwardDistance;
+
 //ここまで共通
     
 //周の動き共通
@@ -86,13 +92,13 @@ public class PumpkinEnemy : MonoBehaviour {
         //一周にかける時間から速度を算出
         aroundSpeed = 360.0f / aroundPerSecond;
 
-        //再利用時に種類を変えるため
-        mesh = transform.GetChild(0).GetComponent<MeshFilter>();
-        meshCollider = GetComponent<MeshCollider>();
-
         //消滅時にモデルを回転させるため
         modelTrans = transform.GetChild(0);
         modelStartLocalRot = modelTrans.localRotation;
+
+        //再利用時に種類を変えるため
+        mesh = modelTrans.GetComponent<MeshFilter>();
+        meshCollider = GetComponent<MeshCollider>();
 
         gameObject.SetActive(false);
 	}
@@ -144,6 +150,9 @@ public class PumpkinEnemy : MonoBehaviour {
         if (deadTimer>vanishTime)
         {
             //煙出現
+            var pos = transform.position;
+            pos += transform.rotation * Vector3.forward * forwardDistance;
+            ObjectPool.Instance.GetGameObject(vanishSmokeParticle, pos, transform.rotation);
 
             gameObject.SetActive(false);
             deadTimer = 0.0f;
@@ -259,7 +268,7 @@ public class PumpkinEnemy : MonoBehaviour {
         radius = waveRad;
         rotatePerSecond = waveTime;
         rotateSpeed = 360.0f / rotatePerSecond;
-        angle = 0;
+        angle = Random.Range(0.0f, 360.0f);
 
         startPos = playerTrans.position;
         startPos.y += height;
@@ -279,7 +288,7 @@ public class PumpkinEnemy : MonoBehaviour {
         radius = rad;
         rotatePerSecond = rotateTime;
         rotateSpeed = 360.0f / rotatePerSecond;
-        angle = 0;
+        angle = Random.Range(0.0f, 360.0f);
 
         var pos = playerTrans.position;
         pos += Quaternion.Euler(0.0f, direction, 0.0f) * Vector3.forward * distance;
@@ -303,7 +312,7 @@ public class PumpkinEnemy : MonoBehaviour {
         radius = rad;
         rotatePerSecond = rotateTime;
         rotateSpeed = 360.0f / rotatePerSecond;
-        angle = 0;
+        angle = Random.Range(0.0f, 360.0f);
 
         var pos = playerTrans.position;
         pos += Quaternion.Euler(0.0f, direction, 0.0f) * Vector3.forward * distance;
@@ -327,7 +336,7 @@ public class PumpkinEnemy : MonoBehaviour {
         radius = rad;
         rotatePerSecond = rotateTime;
         rotateSpeed = 360.0f / rotatePerSecond;
-        angle = 0;
+        angle = Random.Range(0.0f, 360.0f);
 
         var pos = playerTrans.position;
         pos += Quaternion.Euler(0.0f, direction, 0.0f) * Vector3.forward * distance;
@@ -346,6 +355,11 @@ public class PumpkinEnemy : MonoBehaviour {
         meshCollider.sharedMesh = _mesh;
         pumpScore = _score;
         //transform.position = Vector3.down * 1000;
+
+
+        //かぼちゃの角度を直す
+        modelTrans.localRotation = modelStartLocalRot;
+
     }
     //時計回りか反時計回りを決める
     void RotDirSelect()
@@ -356,10 +370,6 @@ public class PumpkinEnemy : MonoBehaviour {
         {
             isTurnRight = true;
         }
-
-        //かぼちゃの角度を直す
-        modelTrans.localRotation = modelStartLocalRot;
-
     }
 
     void OnCollisionEnter(Collision col)

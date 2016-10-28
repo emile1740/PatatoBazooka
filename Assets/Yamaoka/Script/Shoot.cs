@@ -19,6 +19,9 @@ public class Shoot : MonoBehaviour {
     [SerializeField]
     private Transform fireTrans;
     [SerializeField]
+    private AudioSource fireAudio;
+
+    [SerializeField]
     private GameObject bullet;
     [SerializeField, Range(1.0f, 100.0f)]
     private float speed;
@@ -33,6 +36,7 @@ public class Shoot : MonoBehaviour {
         {
             GameObject temp = ObjectPool.Instance.GetGameObject(bullet, fireTrans.position, Quaternion.Euler(fireTrans.eulerAngles + Vector3.left * 90.0f));
             temp.GetComponent<Rigidbody>().velocity = cameraTrans.rotation * Vector3.forward * speed;
+            fireAudio.Play();
         }
 
         if (isVive)
@@ -47,13 +51,13 @@ public class Shoot : MonoBehaviour {
         {
             GameObject temp = ObjectPool.Instance.GetGameObject(bullet, fireTrans.position, Quaternion.Euler(fireTrans.eulerAngles + Vector3.left * 90.0f));
             temp.GetComponent<Rigidbody>().velocity = fireTrans.rotation * Vector3.forward * speed;
-
+            fireAudio.Play();
         }
         if (leftController.GetPressDown(SteamVR_Controller.ButtonMask.Trigger))
         {
             GameObject temp = ObjectPool.Instance.GetGameObject(bullet, fireTrans.position, Quaternion.Euler(fireTrans.eulerAngles + Vector3.left * 90.0f));
             temp.GetComponent<Rigidbody>().velocity = fireTrans.rotation * Vector3.forward * speed;
-
+            fireAudio.Play();
         }
     }
 }

@@ -152,6 +152,9 @@ MonoBehaviour:
   deadVec: {x: 0, y: 8, z: -25}
   vanishTime: 1
   gravity: 9.81
+  vanishSmokeParticle: {fileID: 1000012288648500, guid: 296095d05e5d8a54b90e030cdea453d0,
+    type: 2}
+  forwardDistance: 0
   aroundPerSecond: 4
   radius: 4
   rotatePerSecond: 1

@@ -24,8 +24,9 @@ public class GameStateManager : MonoBehaviour {
     private float gameLimit;
     private float timer;
 
-    //スコアにする場合廃止
-    [SerializeField, Header("かぼちゃを倒した数")]
+    ////スコアにする場合廃止
+    //スコアとして流用
+    [SerializeField, Header("現在のスコア")]
     private int pumpkinCount = 0;
 
     [SerializeField, Header("スタートのためのゲームオブジェクト")]
@@ -46,10 +47,12 @@ public class GameStateManager : MonoBehaviour {
     private Text countDownText;
     [SerializeField, Header("ゲームの残り時間表示用テキスト")]
     private Text timeLimitText;
-    // Use this for initialization
-    void Start() {
+    [SerializeField, Header("スコア表示用テキスト")]
+    private Text scoreText;
 
-    }
+    [SerializeField, Header("開始、終了時の煙パーティクル")]
+    private ParticleSystem smokeParticle;
+
 
     // Update is called once per frame
     void Update() {
@@ -111,6 +114,7 @@ public class GameStateManager : MonoBehaviour {
         }
         //スタートを0.5秒表示した後ゲーム開始
         countDownText.text = "START";
+        smokeParticle.Play();
         yield return new WaitForSeconds(0.5f);
         countDownText.text = "";
         nowState = Status.Game;
@@ -119,11 +123,13 @@ public class GameStateManager : MonoBehaviour {
     //ゲーム終了後TIMEUPを表示
     IEnumerator GameFinishText() {
         countDownText.text = "TIME UP";
+        smokeParticle.Play();
         //表示秒数をとりあえず1秒に
         float waitTime = 1.0f;
         yield return new WaitForSeconds(waitTime);
         countDownText.text = "";
         timeLimitText.text = "";
+        scoreText.text = "";
         nowState = Status.Result;
         result.score = pumpkinCount;
 
@@ -136,6 +142,11 @@ public class GameStateManager : MonoBehaviour {
 
     void GameUpdate() {
 
+        scoreText.text = pumpkinCount.ToString();
+
+        if (onceResult)
+            return;
+
         timer -= Time.deltaTime;
         if (timer < 0.0f && !onceResult) {
             onceResult = true;
@@ -143,6 +154,7 @@ public class GameStateManager : MonoBehaviour {
             GoResult();
             return;
         }
+
         int cnt = (int)timer + 1;
         timeLimitText.text = cnt.ToString();
     }

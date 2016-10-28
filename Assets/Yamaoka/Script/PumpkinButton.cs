@@ -8,6 +8,11 @@ public class PumpkinButton : MonoBehaviour {
     [HideInInspector]
     public UnityEvent CollisionPotato;
     private bool onceCollision = false;
+
+    private float cooltimer;
+    [SerializeField]
+    private const float COOL_TIMER = 1.0f;
+
     void Start()
     {
         var temp = GameObject.FindObjectOfType<GameStateManager>();
@@ -36,14 +41,22 @@ public class PumpkinButton : MonoBehaviour {
         onceCollision = false;
     }
 
+    void Update() {
+        if (onceCollision) {
+            cooltimer += Time.deltaTime;
+            if(cooltimer > COOL_TIMER) {
+                onceCollision = false;
+            }
+        }
+    }
+
     void OnCollisionEnter(Collision col)
     {
-        if (col.gameObject.tag == "Potato"&&!onceCollision)
-        {
+        if (col.gameObject.tag == "Potato" && !onceCollision) {
             onceCollision = true;
+            cooltimer = 0.0f;
             CollisionPotato.Invoke();
         }
-
     }
 
 }

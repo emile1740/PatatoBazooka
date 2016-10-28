@@ -14,6 +14,9 @@ public class Result : MonoBehaviour {
     [Header("パネルの拡大縮小させるマネージャー")]
     public PanelScalingManager panelScalingManager;
 
+    //[Header("花火エフェクトを発生させるマネージャー")]
+    //public ExplosionManager explosionManager;
+
     [Header("結果表示用パネル")]
     public RectTransform resultPanel;
 
@@ -60,11 +63,46 @@ public class Result : MonoBehaviour {
         END
     }
 
+    [Header("ランク外時に表示するテキスト")]
+    public GameObject outRankingText;
+
+    [Header("自分のスコアを表示するテキスト")]
+    public GameObject myScoreText;
+
     [Header("ランクイン時のフレーム")]
     public GameObject countFrame;
-    private GameObject myScoreText;
 
     private Dictionary<GameObject, Vector3> rankingDataDic;
+
+    //花火エフェクトを生成できる状態かどうかのフラグ
+    public bool isExplosionGenerate;
+
+    // Use this for initialization
+    void Start() {
+
+        //ランキングデータの読み込み
+        var fr = new FileReader(this);
+        fr.ReadCsv();
+
+        //for(int i=0;i<rankingDataStore ;int++)
+        rankingDataDic = new Dictionary<GameObject, Vector3>();
+
+        //各ランキングデータのオブジェクトの初期位置を保存しておく
+        foreach (Transform child in rankingDataStore.transform) {
+            rankingDataDic.Add(child.gameObject, child.localPosition);
+        }
+    }
+
+    /// <summary>
+    /// アプリケーション終了時にランキングデータに変更があればCSVファイルに書き込む
+    /// </summary>
+    void OnApplicationQuit() {
+        //今回のスコアがランクインされていたら、順位を変更して書き換える
+        if (rankingNo != rankingData.Length) {
+            var fw = new FileWriter(this);
+            fw.WriteCsv();
+        }
+    }
 
     /// <summary>
     /// 値の初期化
@@ -72,6 +110,8 @@ public class Result : MonoBehaviour {
     public void initialize() {
         state = State.START;
         rankingNo = rankingData.Length;
+
+        outRankingText.SetActive(false);
 
         countFrame.SetActive(true);
         myScoreImageParent.SetActive(true);
@@ -91,10 +131,16 @@ public class Result : MonoBehaviour {
     public void initialize_ComeTitle() {
         state = State.START;
         rankingNo = 0;
+        outRankingText.SetActive(false);
+
         countFrame.SetActive(false);
         myScoreImageParent.SetActive(false);
-
         myScoreText.SetActive(false);
+
+        //各ランキングデータのオブジェクトを初期位置に戻す
+        foreach (Transform child in rankingDataStore.transform) {
+            child.localPosition = rankingDataDic[child.gameObject];
+        }
 
         float firstPos = 200.0f;
         int upperLevel = 5;
@@ -109,37 +155,6 @@ public class Result : MonoBehaviour {
             child.localPosition = pos;
         }
     }
-
-    // Use this for initialization
-    void Start() {
-
-        //ランキングデータの読み込み
-        var fr = new FileReader(this);
-        fr.ReadCsv();
-
-        //for(int i=0;i<rankingDataStore ;int++)
-        rankingDataDic = new Dictionary<GameObject, Vector3>();
-
-        //各ランキングデータのオブジェクトの初期位置を保存しておく
-        foreach (Transform child in rankingDataStore.transform) {
-            rankingDataDic.Add(child.gameObject, child.localPosition);
-        }
-
-        myScoreText = resultPanel.FindChild("TEXTUIPanel/MyScoreText").gameObject;
-
-    }
-
-    /// <summary>
-    /// アプリケーション終了時にランキングデータに変更があればCSVファイルに書き込む
-    /// </summary>
-    void OnApplicationQuit() {
-        //今回のスコアがランクインされていたら、順位を変更して書き換える
-        if (rankingNo != rankingData.Length) {
-            var fw = new FileWriter(this);
-            fw.WriteCsv();
-        }
-    }
-
 
     /// <summary>
     /// タイムアップでゲームが終了した時に呼ばれる
@@ -185,6 +200,8 @@ public class Result : MonoBehaviour {
             //その移動量分、他の順位も移動させる
             if (rankingNo != rankingData.Length) {
 
+                isExplosionGenerate = true;
+
                 setRankingImage();
 
                 //ランクインしたオブジェクトを設定
@@ -200,6 +217,9 @@ public class Result : MonoBehaviour {
                 //ドラムロール音を再生する
                 AudioManager.Instance.PlaySE("se_drumroll");
                 state = State.SCROLL;
+
+            }else {
+
             }
         }
 
@@ -225,6 +245,7 @@ public class Result : MonoBehaviour {
 
             case State.NOT_IN_RANKING:
                 //ランキング内に入っていない場合
+                outRankingText.SetActive(true);
                 state = State.END;
                 break;
 
@@ -240,17 +261,38 @@ public class Result : MonoBehaviour {
     /// </summary>
     public void PanelScalingEnd() {
         //拡大縮小演出が終了したら前のステータスの状態によって次の遷移先を設定
-        if (state == State.PANEL_EXPAND) {
+        switch (state) {
+            case State.PANEL_EXPAND:
 
-            //ゲーム画面から呼ばれた場合はランキングデータの設定に移行
-            state = State.NOT_IN_RANKING;
+                Debug.Log("Expand");
 
-            //タイトル画面から呼ばれた場合は
-            state = State.END;
+                //ゲーム画面から呼ばれた場合はランキングデータの設定に移行
+                if (gameStateManager.nowState == GameStateManager.Status.Result) {
+                    state = State.NOT_IN_RANKING;
 
-        } else if (state == State.PANEL_REDUCTION) {
-            state = State.END;
-            gameStateManager.GoGameInitialize();
+                } else if (gameStateManager.nowState == GameStateManager.Status.Ranking) {
+                    //タイトル画面から呼ばれた場合は、終了状態に移行する
+                    state = State.END;
+                }
+
+                break;
+
+            case State.PANEL_REDUCTION:
+
+                state = State.END;
+
+                Debug.Log("REDUCTION");
+
+                if (gameStateManager.nowState == GameStateManager.Status.Title) {
+                    gameStateManager.GoTitleInitialize();
+
+                } else if (gameStateManager.nowState == GameStateManager.Status.Result) {
+                    gameStateManager.GoGameInitialize();
+
+                } else if (gameStateManager.nowState == GameStateManager.Status.Ranking) {
+                    gameStateManager.GoGameInitialize();
+                }
+                break;
         }
     }
 
@@ -391,5 +433,16 @@ public class Result : MonoBehaviour {
             }
         }
         return true;
+    }
+    
+    /// <summary>
+    /// 花火エフェクト関連をリセット
+    /// </summary>
+    public void resetExplotion() {
+        isExplosionGenerate = false;
+        var explosions = GameObject.FindGameObjectsWithTag("Explosion");
+        foreach (var explosion in explosions) {
+            Destroy(explosion);
+        }
     }
 }

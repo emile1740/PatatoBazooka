@@ -6,6 +6,9 @@ public class ExplosionManager : MonoBehaviour {
     [Header("ゲーム全体のステータスマネージャー")]
     public GameStateManager gameStateManager;
 
+    [Header("リザルト")]
+    public Result result;
+
     [Header("花火エフェクトのプレハブ配列")]
     public GameObject[] explosionPrefabList;
 
@@ -36,7 +39,8 @@ public class ExplosionManager : MonoBehaviour {
     // Update is called once per frame
     void Update() {
 
-        if (gameStateManager.nowState == GameStateManager.Status.Result) {
+        if (result.isExplosionGenerate) {
+        //if (gameStateManager.nowState == GameStateManager.Status.Result) {
             randomTimer -= Time.deltaTime;
 
             if (randomTimer <= 0.0f) {

@@ -216,6 +216,19 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
 	}
 
     /// <summary>
+    /// 指定したSEを停止する
+    /// </summary>
+    public void StopSE(string seName) {
+        if (!this.seDict.ContainsKey(seName))
+            throw new ArgumentException(seName + " not found", "seName");
+
+        //プレイ中の指定したSEを取得
+        AudioSource source = this.seSources.FirstOrDefault(s => s.isPlaying);
+        if(source != null) source.Stop();
+    }
+
+
+    /// <summary>
     /// 指定したSEを再び再生できる場合は、その音を取得
     /// </summary>
     /// <param name="seName"></param>

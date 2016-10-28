@@ -53,6 +53,9 @@ public class GameStateManager : MonoBehaviour {
     [SerializeField, Header("開始、終了時の煙パーティクル")]
     private ParticleSystem smokeParticle;
 
+    void Start() {
+        AudioManager.Instance.PlayBGM("bgm_Game_1",true,1);
+    }
 
     // Update is called once per frame
     void Update() {

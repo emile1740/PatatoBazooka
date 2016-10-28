@@ -5,7 +5,7 @@ public class SmokeEndCheck : MonoBehaviour {
     private ParticleSystem particle;
 
     // Use this for initialization
-    void Start()
+    void Awake()
     {
         particle = GetComponent<ParticleSystem>();
     }

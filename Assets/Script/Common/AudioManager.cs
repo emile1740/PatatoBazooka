@@ -49,7 +49,7 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
 		//}
 
 		//AudioSourceを生成する
-		//this.bgmSource = this.gameObject.AddComponent<AudioSource> ();
+		this.bgmSource = this.gameObject.AddComponent<AudioSource> ();
 		this.seSources = new List<AudioSource> ();
 
 		//AudioClipを生成する

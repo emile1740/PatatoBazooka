@@ -88,8 +88,7 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
 	/// </summary>
 	/// <param name="bgmName">ファイル名</param>
 	/// <param name="isLoop">ループさせるかどうか</param>
-	//public void PlayBGM(string bgmName, bool isLoop = false, float volume = DEF_VOL_BGM, float pitch = DEF_PITCH, float delay = 0.0f)
-	public void PlayBGM(string bgmName, bool isLoop, float volume, float pitch = DEF_PITCH, float delay = 0.0f)
+	public void PlayBGM(string bgmName, bool isLoop = false, float volume = DEF_VOL_BGM, float pitch = DEF_PITCH, float delay = 0.0f)
 	{
 		if (!this.bgmDict.ContainsKey(bgmName))
 			throw new ArgumentException(bgmName + " not found", "bgmName");
@@ -104,8 +103,6 @@ public class AudioManager : SingletonMonoBehaviour<AudioManager>
 
 		Invoke("DelayPlayBGM", delay);
 	}
-
-    public int count;
 
 	/// <summary>
 	/// SEを設定する

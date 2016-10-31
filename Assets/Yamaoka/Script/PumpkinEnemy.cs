@@ -37,6 +37,10 @@ public class PumpkinEnemy : MonoBehaviour {
     private Transform modelTrans;
     private Quaternion modelStartLocalRot;
 
+    //芋ヒット時にエフェクトを発生
+    [SerializeField, Header("ヒットエフェクトのパーティクル")]
+    private GameObject HitEffectParticle;
+
     //消滅時に煙を発生
     [SerializeField,Header("煙のパーティクル")]
     private GameObject vanishSmokeParticle;
@@ -377,6 +381,7 @@ public class PumpkinEnemy : MonoBehaviour {
         if (col.gameObject.tag == "Potato" && !isDead)
         {
             //CollisionPotato.Invoke();
+            ObjectPool.Instance.GetGameObject(HitEffectParticle, col.contacts[0].point, transform.rotation);
             gameState.KillPumpkin(pumpScore);
             isDead = true;
             //gameObject.SetActive(false);

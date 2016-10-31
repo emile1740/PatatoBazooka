@@ -6,25 +6,34 @@ public class ImoAndSmokePool : ObjectPool {
     private GameObject ImoPrefab;
     [SerializeField]
     private GameObject SmokePrefab;
+    [SerializeField]
+    private GameObject HitEffectPrefab;
 
     [SerializeField, Header("開始時にプールする芋の数")]
     private int createImoCount;
     [SerializeField, Header("開始時にプールする煙の数")]
     private int createSmokeCount;
+    [SerializeField, Header("開始時にプールするヒットエフェクトの数")]
+    private int createHitEffectCount;
 
     //開始時に一定量作っておく
     void Awake()
     {
-        int max = createImoCount + createSmokeCount;
+        int sec = createImoCount + createSmokeCount;
+        int max = sec + createHitEffectCount;
 
         GameObject[] temp = new GameObject[max];
         for (int i = 0; i < createImoCount; i++)
         {
-            temp[i]=ObjectPool.Instance.GetGameObject(ImoPrefab, Vector3.zero, Quaternion.identity);
+            temp[i] = ObjectPool.Instance.GetGameObject(ImoPrefab, Vector3.zero, Quaternion.identity);
         }
-        for (int i = createImoCount; i < max; i++)
+        for (int i = createImoCount; i < sec; i++)
         {
             temp[i] = ObjectPool.Instance.GetGameObject(SmokePrefab, Vector3.zero, Quaternion.identity);
+        }
+        for (int i = sec; i < max; i++)
+        {
+            temp[i] = ObjectPool.Instance.GetGameObject(HitEffectPrefab, Vector3.zero, Quaternion.identity);
         }
         foreach (GameObject obj in temp)
         {

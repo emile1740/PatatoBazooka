@@ -29,12 +29,12 @@ public class GameStateManager : MonoBehaviour {
     [SerializeField, Header("現在のスコア")]
     private int pumpkinCount = 0;
 
-    [SerializeField, Header("スタートのためのゲームオブジェクト")]
-    private GameObject startButton;
-    [SerializeField, Header("ランキングのためのゲームオブジェクト")]
-    private GameObject rankingButton;
-    [SerializeField, Header("タイトル戻るためのゲームオブジェクト")]
-    private GameObject titleButton;
+    [Header("スタートのためのゲームオブジェクト")]
+    public GameObject startButton;
+    [Header("ランキングのためのゲームオブジェクト")]
+    public GameObject rankingButton;
+    [Header("タイトル戻るためのゲームオブジェクト")]
+    public GameObject titleButton;
 
     [SerializeField, Header("敵のプレハブ")]
     private GameObject enemy;
@@ -142,8 +142,8 @@ public class GameStateManager : MonoBehaviour {
         result.score = pumpkinCount;
 
         //ゲームスタート用のかぼちゃとタイトルに戻る用のかぼちゃを表示
-        startButton.SetActive(true);
-        titleButton.SetActive(true);
+        //startButton.SetActive(true);
+        //titleButton.SetActive(true);
 
         result.callViewResult();
     }

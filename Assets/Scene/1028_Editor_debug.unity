@@ -14892,7 +14892,7 @@ GameObject:
   - 114: {fileID: 373273365}
   m_Layer: 0
   m_Name: Pumpkin_Title
-  m_TagString: Untagged
+  m_TagString: Pumpkin
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -19838,6 +19838,85 @@ CanvasRenderer:
     type: 2}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 484302303}
+--- !u!1 &484356142
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 484356146}
+  - 33: {fileID: 484356145}
+  - 64: {fileID: 484356144}
+  - 23: {fileID: 484356143}
+  m_Layer: 0
+  m_Name: Plane
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!23 &484356143
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 484356142}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_Materials:
+  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  m_SubsetIndices: 
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_PreserveUVs: 1
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_SelectedWireframeHidden: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingOrder: 0
+--- !u!64 &484356144
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 484356142}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Convex: 0
+  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!33 &484356145
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 484356142}
+  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &484356146
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 484356142}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -10, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 14
 --- !u!1 &487156491
 GameObject:
   m_ObjectHideFlags: 0
@@ -49920,7 +49999,7 @@ GameObject:
   - 114: {fileID: 1176543422}
   m_Layer: 0
   m_Name: Pumpkin_Ranking
-  m_TagString: Untagged
+  m_TagString: Pumpkin
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -50054,7 +50133,7 @@ MonoBehaviour:
   result: {fileID: 983505438}
   panelScalingManager: {fileID: 1977022966}
   nowState: 0
-  gameLimit: 10
+  gameLimit: 30
   pumpkinCount: 0
   startButton: {fileID: 1768264759}
   rankingButton: {fileID: 1176543421}
@@ -51022,7 +51101,7 @@ RectTransform:
   m_RootOrder: 0
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 100}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 1600, y: 1000}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1202752523
@@ -71778,7 +71857,7 @@ GameObject:
   - 114: {fileID: 1768264760}
   m_Layer: 0
   m_Name: Pumpkin_GameStart
-  m_TagString: Untagged
+  m_TagString: Pumpkin
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -72792,8 +72871,10 @@ MonoBehaviour:
   ImoPrefab: {fileID: 1000011116494302, guid: f170f6762c3cf9944ac036e482dc236b, type: 2}
   SmokePrefab: {fileID: 1000012288648500, guid: 296095d05e5d8a54b90e030cdea453d0,
     type: 2}
+  HitEffectPrefab: {fileID: 0}
   createImoCount: 50
   createSmokeCount: 5
+  createHitEffectCount: 0
 --- !u!4 &1782072778
 Transform:
   m_ObjectHideFlags: 0
@@ -75202,7 +75283,7 @@ RectTransform:
   m_RootOrder: 3
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 15}
   m_SizeDelta: {x: 1601.4097, y: 1000.88104}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1842562700

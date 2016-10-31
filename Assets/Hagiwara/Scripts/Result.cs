@@ -296,9 +296,7 @@ public class Result : MonoBehaviour {
 
             case State.NOT_IN_RANKING:
                 //ランキング内に入っていない場合
-                outRankingText.SetActive(true);
-                AudioManager.Instance.PlayBGM("bgm_Result_OutRank",true);
-                state = State.END;
+                notInRanking();
                 break;
 
             case State.SCROLL:
@@ -455,6 +453,17 @@ public class Result : MonoBehaviour {
     }
 
     /// <summary>
+    /// ランキングに入っていない場合の処理
+    /// </summary>
+    private void notInRanking() {
+        outRankingText.SetActive(true);
+        AudioManager.Instance.PlayBGM("bgm_Result_OutRank", true);
+        StartCoroutine("PunpkinActivate");
+
+        state = State.END;
+    }
+
+    /// <summary>
     /// ランキングオブジェクトのスクロール処理
     /// </summary>
     private void scrollRanking() {
@@ -470,8 +479,25 @@ public class Result : MonoBehaviour {
             AudioManager.Instance.PlaySE("se_cymbal");
 
             AudioManager.Instance.PlayBGM("bgm_Result", true,1,1,1.0f);
+            StartCoroutine("PunpkinActivate");
             state = State.END;
         }
+    }
+
+    /// <summary>
+    /// かぼちゃの表示タイミング
+    /// </summary>
+    /// <returns></returns>
+    IEnumerator PunpkinActivate() {
+
+        //１秒後にかぼちゃを表示
+        float waitTime = 1.0f;
+        yield return new WaitForSeconds(waitTime);
+
+        gameStateManager.titleButton.SetActive(true);
+        gameStateManager.startButton.SetActive(true);
+
+        Debug.Log("PunpkinActivate");
     }
 
     /// <summary>

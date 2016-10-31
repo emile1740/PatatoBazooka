@@ -14,8 +14,11 @@ public class Result : MonoBehaviour {
     [Header("パネルの拡大縮小させるマネージャー")]
     public PanelScalingManager panelScalingManager;
 
-    //[Header("花火エフェクトを発生させるマネージャー")]
-    //public ExplosionManager explosionManager;
+    [Header("ターゲットカメラ")]
+    public Camera target;
+
+    [Header("リザルト時に表示する親オブジェクト")]
+    public GameObject resultParentObject;
 
     [Header("結果表示用パネル")]
     public RectTransform resultPanel;
@@ -40,10 +43,10 @@ public class Result : MonoBehaviour {
     [Header("ランキングデータのスクロールスピード")]
     public float scrollSpeed;
 
-    [Header("今回のランキングNo")]
+    [Header("今回のランキングNo（Inspectorで設定しなくて良い）")]
     public int rankingNo;
 
-    [Header("ランキングに入った番号のオブジェクト")]
+    [Header("ランキングに入った番号のオブジェクト（Inspectorで設定しなくて良い）")]
     public RectTransform inRankingObjectRect;
 
     [Header("ランキングデータ")]
@@ -65,6 +68,18 @@ public class Result : MonoBehaviour {
 
     [Header("ランク外時に表示するテキスト")]
     public GameObject outRankingText;
+
+    //[Header("ゲットした芋のサイズを表示テキスト")]
+    //public Text getPotatoSizeText;
+
+    [Header("ゲットした芋のサイズのスコア基準")]
+    public int POTATOSIZE_BIG;
+    public int POTATOSIZE_SUPER_BIG;
+
+    [Header("ゲットした芋の画像イメージ")]
+    public Image getPotatoImage;
+    [Header("ゲットした芋の画像リスト")]
+    public Sprite[] getPotatoImageList;
 
     [Header("自分のスコアを表示するテキスト")]
     public GameObject myScoreText;
@@ -122,7 +137,9 @@ public class Result : MonoBehaviour {
             child.localPosition = rankingDataDic[child.gameObject];
         }
 
-        Debug.Log("result - initialize");
+        getPotatoImage.enabled = true;
+        viewGetPotatoSize();
+        
     }
 
     /// <summary>
@@ -131,6 +148,8 @@ public class Result : MonoBehaviour {
     public void initialize_ComeTitle() {
         state = State.START;
         rankingNo = 0;
+
+        getPotatoImage.enabled = false;
         outRankingText.SetActive(false);
 
         countFrame.SetActive(false);
@@ -163,14 +182,29 @@ public class Result : MonoBehaviour {
         initialize();
 
         rankingDataInsertScore();
-        setMyScoreData();
-        
-        if(!panelScalingManager.panelDic.ContainsKey(resultPanel))
+        //setMyScoreData();
+        scoreConversion(myScoreImageParent.transform, score);
+
+        if (!panelScalingManager.panelDic.ContainsKey(resultPanel))
             panelScalingManager.addPanelDictionary(resultPanel,this);
 
         state = State.PANEL_EXPAND;
+        viewResultParentObjectSetting();
     }
 
+    /// <summary>
+    /// リザルト画面を拡大表示するときの各オブジェクトの座標や角度をを設定
+    /// </summary>
+    private void viewResultParentObjectSetting() {
+
+        var pos = target.transform.TransformDirection(Vector3.forward);
+        resultParentObject.transform.position = pos;
+
+        var rot = target.transform.rotation;
+        rot.x = 0.0f;
+        rot.z = 0.0f;
+        resultParentObject.transform.rotation = rot;
+    }
 
     /// <summary>
     /// タイトルからランキングを選んだ時に呼ばれる
@@ -184,14 +218,33 @@ public class Result : MonoBehaviour {
         state = State.PANEL_EXPAND;
     }
 
+    /// <summary>
+    /// ゲットしたポテトのサイズを表示する
+    /// </summary>
+    private void viewGetPotatoSize() {
+
+        if (score >= POTATOSIZE_SUPER_BIG) {
+            //getPotatoSizeText.text = "特大";
+            getPotatoImage.sprite = getPotatoImageList[2];
+        } else if (score >= POTATOSIZE_BIG) {
+            //getPotatoSizeText.text = "大きめ";
+            getPotatoImage.sprite = getPotatoImageList[1];
+        } else {
+            //getPotatoSizeText.text = "普通";
+            getPotatoImage.sprite = getPotatoImageList[0];
+        }
+    }
+
+
+
     // Update is called once per frame
     void Update() {
 
-        //デバッグ用、エンターキーを押したら、パネルを拡大表示する
-        if (state == State.START && Input.GetKeyDown(KeyCode.Return)) {
-            //callViewResult();
-            callViewResult_ComeTitle();
-        }
+        ////デバッグ用、エンターキーを押したら、パネルを拡大表示する
+        //if (state == State.START && Input.GetKeyDown(KeyCode.Return)) {
+        //    //callViewResult();
+        //    callViewResult_ComeTitle();
+        //}
 
         if (state == State.NOT_IN_RANKING) {
 
@@ -217,8 +270,6 @@ public class Result : MonoBehaviour {
                 //ドラムロール音を再生する
                 AudioManager.Instance.PlaySE("se_drumroll");
                 state = State.SCROLL;
-
-            }else {
 
             }
         }
@@ -246,6 +297,7 @@ public class Result : MonoBehaviour {
             case State.NOT_IN_RANKING:
                 //ランキング内に入っていない場合
                 outRankingText.SetActive(true);
+                AudioManager.Instance.PlayBGM("bgm_Result_OutRank",true);
                 state = State.END;
                 break;
 
@@ -296,12 +348,12 @@ public class Result : MonoBehaviour {
         }
     }
 
-    /// <summary>
-    /// 今回のスコアの画像を設定
-    /// </summary>
-    private void setMyScoreData() {
-        scoreConversion(myScoreImageParent.transform,score);
-    }
+    ///// <summary>
+    ///// 今回のスコアの画像を設定
+    ///// </summary>
+    //private void setMyScoreData() {
+    //    scoreConversion(myScoreImageParent.transform,score);
+    //}
 
     /// <summary>
     /// スコアに対応した画像に変換する
@@ -416,6 +468,8 @@ public class Result : MonoBehaviour {
         if (checkScrollTarget()) {
             AudioManager.Instance.StopSE();
             AudioManager.Instance.PlaySE("se_cymbal");
+
+            AudioManager.Instance.PlayBGM("bgm_Result", true,1,1,1.0f);
             state = State.END;
         }
     }

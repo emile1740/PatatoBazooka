@@ -54,7 +54,7 @@ public class GameStateManager : MonoBehaviour {
     private ParticleSystem smokeParticle;
 
     void Start() {
-        AudioManager.Instance.PlayBGM("bgm_Game_1",true,1);
+        AudioManager.Instance.PlayBGM("bgm_Title",true);
     }
 
     // Update is called once per frame
@@ -121,6 +121,9 @@ public class GameStateManager : MonoBehaviour {
         yield return new WaitForSeconds(0.5f);
         countDownText.text = "";
         nowState = Status.Game;
+
+        AudioManager.Instance.PlayBGM("bgm_Game_2",true);
+
         PumpkinGenerator();
     }
     //ゲーム終了後TIMEUPを表示
@@ -192,12 +195,17 @@ public class GameStateManager : MonoBehaviour {
 
         nowState = Status.Title;
         result.state = Result.State.PANEL_REDUCTION;
+
+        AudioManager.Instance.PlayBGM("bgm_Title", true);
     }
     public void GoResult() {
         Debug.Log("GoResult");
 
         //出現しているかぼちゃを消す
         EnemyManager.Instance.ActiveAllFalse();
+
+        AudioManager.Instance.StopBGM();
+
         StartCoroutine(GameFinishText());
     }
     public void GoRanking() {
@@ -237,16 +245,14 @@ public class GameStateManager : MonoBehaviour {
 
         result.resetExplotion();
 
-        //result.isExplosionGenerate = false;
-        //foreach(var explosion in GameObject.FindGameObjectsWithTag("Explosion")) {
-        //    Destroy(explosion);
-        //}
-
         //ゲームスタート用のかぼちゃとランキング表示用のかぼちゃを非表示
         //タイトルへ戻る用のかぼちゃも非表示
         startButton.SetActive(false);
         rankingButton.SetActive(false);
         titleButton.SetActive(false);
+
+
+        AudioManager.Instance.StopBGM();
 
         //開始前のカウントダウン
         //引数はカウントダウンの時間

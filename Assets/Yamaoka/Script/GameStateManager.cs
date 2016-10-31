@@ -101,6 +101,7 @@ public class GameStateManager : MonoBehaviour {
     IEnumerator GameStartCountDown(int cnt) {
         float oneSec = 0.0f;
         string cntStr = cnt.ToString();
+        AudioManager.Instance.PlaySE("CountDown_01");
         while (cnt > 0) {
             oneSec += Time.deltaTime;
             //点滅させるために1秒のうち0.5秒は表示しない
@@ -130,6 +131,7 @@ public class GameStateManager : MonoBehaviour {
     IEnumerator GameFinishText() {
         countDownText.text = "TIME UP";
         smokeParticle.Play();
+        AudioManager.Instance.PlaySE("TimeUp_01");
         //表示秒数をとりあえず1秒に
         float waitTime = 1.0f;
         yield return new WaitForSeconds(waitTime);

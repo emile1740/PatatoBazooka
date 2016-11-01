@@ -19856,7 +19856,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!23 &484356143
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -79886,7 +79886,7 @@ Skybox:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1975314594}
   m_Enabled: 1
-  m_CustomSkybox: {fileID: 2100000, guid: 38433fd2f6176e7479b875ace26362dd, type: 2}
+  m_CustomSkybox: {fileID: 2100000, guid: 2ab02bb253d280b4ea461741b9b5de6c, type: 2}
 --- !u!1 &1975447146
 GameObject:
   m_ObjectHideFlags: 0

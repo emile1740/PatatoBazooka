@@ -64,8 +64,6 @@ public class PumpkinButton : MonoBehaviour {
         }
 
         //縦揺れの処理
-        //現状リザルト画面からタイトルに戻るときに
-        //右のカボチャが一瞬カクつくよ（かぼちゃのSetActiveが切り替わった瞬間）
         var pos = defaultPosition;
         var adjust = defaultPosition.y + ((swayWidth / 2) * (int)direction * -1);
         pos.y = adjust + Mathf.PingPong(Time.time, swayWidth) * (int)direction;

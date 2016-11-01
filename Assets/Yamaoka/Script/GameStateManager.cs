@@ -242,6 +242,9 @@ public class GameStateManager : MonoBehaviour {
 
         titleLogo.SetActive(true);
 
+        //ボタンが切り替わった瞬間にカクつかないように、座標を調整
+        rankingButton.transform.localPosition = titleButton.transform.localPosition;
+
     }
 
     public void GoGameInitialize() {

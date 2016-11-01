@@ -56,11 +56,15 @@ public class GameStateManager : MonoBehaviour {
     private ParticleSystem smokeParticle;
 
     void Start() {
-        AudioManager.Instance.PlayBGM("bgm_Title",true);
+        AudioManager.Instance.PlayBGM("bgm_Title", true);
         countDownText.text = "";
         timeLimitText.text = "";
         scoreText.text = "";
     }
+
+    [Header("TOP5画像切り替え用")]
+    public SpriteRenderer top5_ButtonImage;
+    public Sprite[] top5_ButtonImageList;
 
     // Update is called once per frame
     void Update() {
@@ -223,9 +227,11 @@ public class GameStateManager : MonoBehaviour {
             nowState = Status.Ranking;
             titleLogo.SetActive(false);
             result.callViewResult_ComeTitle();
+            top5_ButtonImage.sprite = top5_ButtonImageList[1];
         } else {
             nowState = Status.Title;
             result.state = Result.State.PANEL_REDUCTION;
+            top5_ButtonImage.sprite = top5_ButtonImageList[0];
         }
     }
 

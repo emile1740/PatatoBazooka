@@ -8,6 +8,8 @@ public class GameStateManager : MonoBehaviour {
     public Result result;
     [Header("パネルの拡大縮小させるマネージャー")]
     public PanelScalingManager panelScalingManager;
+    [Header("タイトルロゴ")]
+    public GameObject titleLogo;
 
     private bool onceResult;
     public enum Status {
@@ -216,6 +218,7 @@ public class GameStateManager : MonoBehaviour {
 
         if (nowState != Status.Ranking) {
             nowState = Status.Ranking;
+            titleLogo.SetActive(false);
             result.callViewResult_ComeTitle();
         } else {
             nowState = Status.Title;
@@ -237,6 +240,8 @@ public class GameStateManager : MonoBehaviour {
         startButton.SetActive(true);
         rankingButton.SetActive(true);
 
+        titleLogo.SetActive(true);
+
     }
 
     public void GoGameInitialize() {
@@ -253,6 +258,7 @@ public class GameStateManager : MonoBehaviour {
         rankingButton.SetActive(false);
         titleButton.SetActive(false);
 
+        titleLogo.SetActive(false);
 
         AudioManager.Instance.StopBGM();
 

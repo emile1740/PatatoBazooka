@@ -57,6 +57,9 @@ public class GameStateManager : MonoBehaviour {
 
     void Start() {
         AudioManager.Instance.PlayBGM("bgm_Title",true);
+        countDownText.text = "";
+        timeLimitText.text = "";
+        scoreText.text = "";
     }
 
     // Update is called once per frame

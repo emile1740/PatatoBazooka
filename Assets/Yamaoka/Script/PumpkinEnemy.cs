@@ -353,11 +353,12 @@ public class PumpkinEnemy : MonoBehaviour {
         RotDirSelect();
         CircleMove();
     }
-    public void SetMeshAndScore(Mesh _mesh, int _score)
+    public void SetMeshAndScore(Mesh _mesh, int _score,GameObject particle)
     {
         mesh.mesh = _mesh;
         meshCollider.sharedMesh = _mesh;
         pumpScore = _score;
+        vanishSmokeParticle = particle;
         //transform.position = Vector3.down * 1000;
 
 

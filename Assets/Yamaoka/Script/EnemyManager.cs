@@ -8,6 +8,8 @@ public class EnemyManager : SingletonMonoBehaviour<EnemyManager>
     private int[] pumpkinPoint;
     [SerializeField, Header("かぼちゃの種類(大きい順)")]
     private Mesh[] pumpkinMeshes;
+    [SerializeField, Header("煙の種類(かぼちゃの色順)")]
+    private GameObject[] pumpkinParticles;
     [SerializeField, Header("")]
     private GameObject pumpkin;
     [SerializeField, Header("ゲーム中のかぼちゃの上限")]
@@ -18,6 +20,7 @@ public class EnemyManager : SingletonMonoBehaviour<EnemyManager>
     private float minDistance;
     [SerializeField]
     private float maxDistance;
+    private float typeDis = 0.0f;
 
     [SerializeField, Header("敵の高さの幅")]
     private float minHeight;
@@ -61,6 +64,7 @@ public class EnemyManager : SingletonMonoBehaviour<EnemyManager>
             pumpkins.Add(temp.GetComponent<PumpkinEnemy>());
             temp.transform.parent = transform;
         }
+        typeDis = (maxDistance - minDistance) / 4.0f;
     }
 
     //ゲーム終了時に消す
@@ -161,8 +165,17 @@ public class EnemyManager : SingletonMonoBehaviour<EnemyManager>
         }
 
         //メッシュと点数を決める
-        type = Random.Range(0, 4);
-        enem.SetMeshAndScore(pumpkinMeshes[type], pumpkinPoint[type]);
+        //type = Random.Range(0, 4);
+
+        //自分との距離で決めるように
+        for (int i = 0; i < 4; i++)
+        {
+            if (dis < minDistance + typeDis * (i + 1) || i == 3) 
+            {
+                enem.SetMeshAndScore(pumpkinMeshes[i], pumpkinPoint[i],pumpkinParticles[i]);
+                i += 4;
+            }
+        }
 
     }
 }

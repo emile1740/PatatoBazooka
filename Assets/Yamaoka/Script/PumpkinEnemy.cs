@@ -4,9 +4,9 @@ using UnityEngine.Events;
 
 //コメント不足
 public class PumpkinEnemy : MonoBehaviour {
-//全動きのパターン共通
-    //
-
+    //全動きのパターン共通
+    // 
+    private AudioSource hitAudio;
     //[HideInInspector]
     //public UnityEvent CollisionPotato;
 
@@ -104,6 +104,8 @@ public class PumpkinEnemy : MonoBehaviour {
         //再利用時に種類を変えるため
         mesh = modelTrans.GetComponent<MeshFilter>();
         meshCollider = GetComponent<MeshCollider>();
+
+        hitAudio = GetComponent<AudioSource>();
 
         gameObject.SetActive(false);
 	}
@@ -387,6 +389,7 @@ public class PumpkinEnemy : MonoBehaviour {
             ObjectPool.Instance.GetGameObject(HitEffectParticle, col.contacts[0].point, transform.rotation);
             gameState.KillPumpkin(scoreNum,pumpScore);
             EnemyManager.Instance.PumpkinCountDecrement();
+            hitAudio.Play();
             isDead = true;
             //gameObject.SetActive(false);
         }

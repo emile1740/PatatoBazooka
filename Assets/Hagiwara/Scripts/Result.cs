@@ -137,8 +137,9 @@ public class Result : MonoBehaviour {
             child.localPosition = rankingDataDic[child.gameObject];
         }
 
-        getPotatoImage.enabled = true;
-        viewGetPotatoSize();
+        //山岡：タイミングを変更
+        //getPotatoImage.enabled = true;
+        //viewGetPotatoSize();
         
     }
 
@@ -496,6 +497,10 @@ public class Result : MonoBehaviour {
 
         gameStateManager.titleButton.SetActive(true);
         gameStateManager.startButton.SetActive(true);
+
+        //山岡：ゲットした芋画像表示をこのタイミングに変更
+        getPotatoImage.enabled = true;
+        viewGetPotatoSize();
 
         Debug.Log("PunpkinActivate");
     }

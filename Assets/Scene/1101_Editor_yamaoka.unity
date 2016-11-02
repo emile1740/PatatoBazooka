@@ -13369,6 +13369,7 @@ MonoBehaviour:
   bullet: {fileID: 1000011116494302, guid: f170f6762c3cf9944ac036e482dc236b, type: 2}
   speed: 50
   isVive: 0
+  vibTime: 0.2
 --- !u!4 &345006621
 Transform:
   m_ObjectHideFlags: 0
@@ -50143,11 +50144,14 @@ MonoBehaviour:
   titleButton: {fileID: 373273364}
   enemy: {fileID: 1000013326943942, guid: e2042c3cf985f2a44aa4acd5ba0661a7, type: 2}
   pumpNum: 60
+  pumpInterval: 1
   radius: 15
   countDownText: {fileID: 413388035}
   timeLimitText: {fileID: 785671689}
   scoreText: {fileID: 1450916699}
   smokeParticle: {fileID: 706358223}
+  top5_ButtonImage: {fileID: 0}
+  top5_ButtonImageList: []
 --- !u!4 &1178730926
 Transform:
   m_ObjectHideFlags: 0
@@ -75068,6 +75072,7 @@ MonoBehaviour:
   maxSpinRadius: 8
   minSpinTime: 2
   maxSpinTime: 8
+  nowPumpkinCount: 0
 --- !u!4 &1838372219
 Transform:
   m_ObjectHideFlags: 0

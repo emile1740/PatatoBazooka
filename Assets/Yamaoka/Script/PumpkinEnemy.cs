@@ -384,6 +384,7 @@ public class PumpkinEnemy : MonoBehaviour {
             //CollisionPotato.Invoke();
             ObjectPool.Instance.GetGameObject(HitEffectParticle, col.contacts[0].point, transform.rotation);
             gameState.KillPumpkin(pumpScore);
+            EnemyManager.Instance.PumpkinCountDecrement();
             isDead = true;
             //gameObject.SetActive(false);
         }

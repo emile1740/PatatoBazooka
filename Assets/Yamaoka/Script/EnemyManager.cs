@@ -50,6 +50,14 @@ public class EnemyManager : SingletonMonoBehaviour<EnemyManager>
     [SerializeField]
     private float maxSpinTime;
 
+    //１ゲーム中に出現した数を種類ごとにカウント
+    private int[] typeCounter = new int[4]{1,1,1,1};
+    //カウントから算出した比率
+    private int[] typeRaito = new int[4];
+    //現在のかぼちゃの数
+    [SerializeField,Header("みるだけ")]
+    private int nowPumpkinCount = 0;
+
     void Awake()
     {
         if (this != Instance)
@@ -67,6 +75,34 @@ public class EnemyManager : SingletonMonoBehaviour<EnemyManager>
         typeDis = (maxDistance - minDistance) / 4.0f;
     }
 
+    //void Update()
+    //{
+    //    if (Input.GetKeyDown(KeyCode.T))
+    //    {
+    //        for (int i = 0; i < typeCounter.Length; i++)
+    //        {
+    //            Debug.Log((i+1).ToString()+"番目は"+typeCounter[i].ToString()+"体");
+    //        }
+    //    }
+    //}
+
+    public void PumpkinCountDecrement()
+    {
+        nowPumpkinCount--;
+        if (nowPumpkinCount < 0)
+            nowPumpkinCount = 0;
+    }
+
+    //ゲーム開始時に芋のカウントを初期化
+    public void ResetCount()
+    {
+        for (int i = 0; i < typeCounter.Length; i++)
+        {
+            typeCounter[i] = 1;
+        }
+        nowPumpkinCount = 0;
+    }
+
     //ゲーム終了時に消す
     public void ActiveAllFalse()
     {
@@ -74,6 +110,19 @@ public class EnemyManager : SingletonMonoBehaviour<EnemyManager>
         {
             temp.gameObject.SetActive(false);
         }
+    }
+
+    //ランダムで出す
+    public void RandomJudge()
+    {
+        //とりあえず今の敵の数と最大出せる数の割合を確率
+        //max100,now20なら80パーセント
+        float _current = nowPumpkinCount * 1.0f;
+        float _parent = maxPumpkin * 1.0f;
+        float per = _current / _parent;
+        if (Random.value > per)
+            GetEnemy();
+
     }
 
     //Instantiateのように使える
@@ -123,10 +172,52 @@ public class EnemyManager : SingletonMonoBehaviour<EnemyManager>
 
     public void TypeSelect(PumpkinEnemy enem)
     {
-        //ランダムは選ばれない：完成してないため
-        int type = Random.Range(1, 6);
+        //仕様変更
+        //ここで種類を先に決める
+        int type=-1;
+        //カウントの合計から、各種類のカウントを引くことで、丁度いい比率になる
+        int sum = 0;
+        foreach (int a in typeCounter)
+            sum += a;
+        for (int i = 0; i < typeCounter.Length; i++)
+        {
+            typeRaito[i] = sum - typeCounter[i];
+        }
+        //0から合計までのランダムな数字を求め、それを比率の各数値の範囲に入るかを判断
+        sum = 0;
+        foreach (int a in typeRaito)
+            sum += a;
+        int ran = Random.Range(0, sum);
+        sum = 0;
+        for (int i = 0; i < typeRaito.Length; i++)
+        {
+            sum += typeRaito[i];
+            if (ran < sum)
+            {
+                type = i;
+                i += typeRaito.Length;
+            }
+        }
+        //通ったら予想外の動き
+        if (type < 0)
+        {
+            Debug.Log("タイプ設定エラー");
+            type = 3;
+        }
 
-        float dis = Random.Range(minDistance, maxDistance);
+
+        float dis = minDistance;
+        //得点が多いタイプほど距離を伸ばす
+        for (int i = type; i > 0; i--)
+            dis += typeDis;
+        dis += Random.Range(0.0f, typeDis);
+
+
+
+        //ランダムは選ばれない：完成してないため
+        int move = Random.Range(1, 6);
+
+        //float dis = Random.Range(minDistance, maxDistance);
         float dir = Random.Range(0.0f, 360.0f);
         float high = Random.Range(minHeight, maxHeight);
 
@@ -135,7 +226,7 @@ public class EnemyManager : SingletonMonoBehaviour<EnemyManager>
         float spinRad = Random.Range(minSpinRadius, maxSpinRadius);
         float spinTime = Random.Range(minSpinTime, maxSpinTime);
 
-        switch (type)
+        switch (move)
         {
             case 0:
                 Debug.Log("0");
@@ -164,18 +255,30 @@ public class EnemyManager : SingletonMonoBehaviour<EnemyManager>
 
         }
 
-        //メッシュと点数を決める
-        //type = Random.Range(0, 4);
 
-        //自分との距離で決めるように
-        for (int i = 0; i < 4; i++)
-        {
-            if (dis < minDistance + typeDis * (i + 1) || i == 3) 
-            {
-                enem.SetMeshAndScore(pumpkinMeshes[i], pumpkinPoint[i],pumpkinParticles[i]);
-                i += 4;
-            }
-        }
+        
+        //メッシュと点数を決める
+        //上に書くとやばそうなので全て決めた後に書く
+        enem.SetMeshAndScore(pumpkinMeshes[type], pumpkinPoint[type], pumpkinParticles[type]);
+        //出現した種類が出にくくなるように比率調整
+        typeCounter[type]++;
+        //現在いる数としてカウント
+        nowPumpkinCount++;
+        if (nowPumpkinCount > maxPumpkin)
+            nowPumpkinCount = maxPumpkin;
+
+        //下は過去のメッシュ設定
+        ////type = Random.Range(0, 4);
+
+        ////自分との距離で決めるように
+        //for (int i = 0; i < 4; i++)
+        //{
+        //    if (dis < minDistance + typeDis * (i + 1) || i == 3) 
+        //    {
+        //        enem.SetMeshAndScore(pumpkinMeshes[i], pumpkinPoint[i],pumpkinParticles[i]);
+        //        i += 4;
+        //    }
+        //}
 
     }
 }

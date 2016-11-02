@@ -42,6 +42,10 @@ public class GameStateManager : MonoBehaviour {
     private GameObject enemy;
     [SerializeField, Header("最初に出す敵の数")]
     private int pumpNum;
+    [SerializeField, Header("敵を出すか判定する間隔"), Range(0.1f, 2.0f)]
+    private float pumpInterval = 1.0f;
+    private float pumpTimer = 0.0f;
+
     [SerializeField, Header("敵との距離")]
     private float radius = 3.0f;
 
@@ -88,6 +92,7 @@ public class GameStateManager : MonoBehaviour {
     }
 
     void PumpkinGenerator() {
+        EnemyManager.Instance.ResetCount();
         //改善した
         for (int i = 0; i < pumpNum; i++) {
             EnemyManager.Instance.GetEnemy();
@@ -163,6 +168,13 @@ public class GameStateManager : MonoBehaviour {
 
         if (onceResult)
             return;
+
+        pumpTimer += Time.deltaTime;
+        if (pumpTimer > pumpInterval)
+        {
+            pumpTimer -= pumpInterval;
+            EnemyManager.Instance.RandomJudge();
+        }
 
         timer -= Time.deltaTime;
         if (timer < 0.0f && !onceResult) {
@@ -259,6 +271,7 @@ public class GameStateManager : MonoBehaviour {
     public void GoGameInitialize() {
         onceResult = false;
 
+        pumpTimer = 0.0f;
         timer = gameLimit;
         pumpkinCount = 0;
 

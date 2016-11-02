@@ -28,6 +28,12 @@ public class Shoot : MonoBehaviour {
     [Header("Viveを使用する"), SerializeField]
     private bool isVive;
 
+    [SerializeField, Header("振動する時間"), Range(0.1f, 1.0f)]
+    private float vibTime;
+    private float timerRightVib = 0.0f;
+    private float timerLeftVib = 0.0f;
+    private bool isRightVib = false;
+    private bool isLeftVib = false;
 	
 	// Update is called once per frame
 	void Update () {
@@ -49,11 +55,10 @@ public class Shoot : MonoBehaviour {
         leftController = SteamVR_Controller.Input((int)leftTrackedObject.index);
         if (rightController.GetPressDown(SteamVR_Controller.ButtonMask.Trigger))
         {
-            //コントローラーの振動(数値は適当)
-            ushort vib = 2000;
-            leftController.TriggerHapticPulse(vib);
+            //コントローラーの振動(boolで管理)
+            isRightVib = true;
             //芋発生
-            GameObject temp = ObjectPool.Instance.GetGameObject(bullet, fireTrans.position, Quaternion.Euler(fireTrans.eulerAngles + Vector3.left * 90.0f));
+            GameObject temp = ObjectPool.Instance.GetGameObject(bullet, fireTrans.position, Quaternion.Euler(fireTrans.eulerAngles - fireTrans.localEulerAngles + Vector3.left * 90.0f));
             //芋発射
             temp.GetComponent<Rigidbody>().velocity = fireTrans.rotation * Vector3.forward * speed;
             //発射音
@@ -61,11 +66,34 @@ public class Shoot : MonoBehaviour {
         }
         else if (leftController.GetPressDown(SteamVR_Controller.ButtonMask.Trigger))
         {
-            ushort vib = 2000;
-            leftController.TriggerHapticPulse(vib);
-            GameObject temp = ObjectPool.Instance.GetGameObject(bullet, fireTrans.position, Quaternion.Euler(fireTrans.eulerAngles + Vector3.left * 90.0f));
+            isLeftVib = true;
+            GameObject temp = ObjectPool.Instance.GetGameObject(bullet, fireTrans.position, Quaternion.Euler(fireTrans.eulerAngles - fireTrans.localEulerAngles + Vector3.left * 90.0f));
             temp.GetComponent<Rigidbody>().velocity = fireTrans.rotation * Vector3.forward * speed;
             fireAudio.Play();
         }
+
+        if (isRightVib)
+        {
+            timerRightVib += Time.deltaTime;
+            if (vibTime < timerRightVib)
+            {
+                isRightVib = false;
+                timerRightVib = 0.0f;
+            }
+
+            rightController.TriggerHapticPulse(2000);
+        }
+        if (isLeftVib)
+        {
+            timerLeftVib += Time.deltaTime;
+            if (vibTime < timerLeftVib)
+            {
+                isLeftVib = false;
+                timerLeftVib = 0.0f;
+            }
+
+            leftController.TriggerHapticPulse(2000);
+        }
+
     }
 }

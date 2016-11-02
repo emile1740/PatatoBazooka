@@ -14,6 +14,7 @@ public class PumpkinEnemy : MonoBehaviour {
     private MeshFilter mesh;
     private MeshCollider meshCollider;
     private int pumpScore;
+    private int scoreNum;
 
     [SerializeField,Header("プレイヤーの位置用")]
     private Transform playerTrans;
@@ -353,8 +354,9 @@ public class PumpkinEnemy : MonoBehaviour {
         RotDirSelect();
         CircleMove();
     }
-    public void SetMeshAndScore(Mesh _mesh, int _score,GameObject particle)
+    public void SetMeshAndScore(int _scoreNum, Mesh _mesh, int _score,GameObject particle)
     {
+        scoreNum = _scoreNum;
         mesh.mesh = _mesh;
         meshCollider.sharedMesh = _mesh;
         pumpScore = _score;
@@ -383,7 +385,7 @@ public class PumpkinEnemy : MonoBehaviour {
         {
             //CollisionPotato.Invoke();
             ObjectPool.Instance.GetGameObject(HitEffectParticle, col.contacts[0].point, transform.rotation);
-            gameState.KillPumpkin(pumpScore);
+            gameState.KillPumpkin(scoreNum,pumpScore);
             EnemyManager.Instance.PumpkinCountDecrement();
             isDead = true;
             //gameObject.SetActive(false);

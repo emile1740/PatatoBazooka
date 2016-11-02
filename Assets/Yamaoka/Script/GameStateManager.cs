@@ -4,13 +4,20 @@ using System.Collections;
 
 public class GameStateManager : MonoBehaviour {
 
+    [Header("共通オブジェクト")]
+    public Common common;
+
     [Header("リザルト")]
     public Result result;
+    [Header("加算スコア")]
+    public AddPumpkinScore addPumpkinScore;
+
     [Header("パネルの拡大縮小させるマネージャー")]
     public PanelScalingManager panelScalingManager;
+
     [Header("タイトルロゴ")]
     public GameObject titleLogo;
-
+    
     private bool onceResult;
     public enum Status {
         Title,
@@ -55,6 +62,14 @@ public class GameStateManager : MonoBehaviour {
     private Text timeLimitText;
     [SerializeField, Header("スコア表示用テキスト")]
     private Text scoreText;
+
+    [SerializeField, Header("スコア表示オブジェクト")]
+    private GameObject scoreObject;
+
+    [SerializeField, Header("タイムリミットオブジェクト")]
+    private GameObject timeLimitObject;
+    [SerializeField, Header("タイムリミット用イメージ")]
+    private Image[] timeLimitImage;
 
     [SerializeField, Header("開始、終了時の煙パーティクル")]
     private ParticleSystem smokeParticle;
@@ -135,6 +150,10 @@ public class GameStateManager : MonoBehaviour {
         smokeParticle.Play();
         yield return new WaitForSeconds(0.5f);
         countDownText.text = "";
+
+        scoreObject.SetActive(true);
+        timeLimitObject.SetActive(true);
+
         nowState = Status.Game;
 
         AudioManager.Instance.PlayBGM("bgm_Game_2",true);
@@ -152,6 +171,12 @@ public class GameStateManager : MonoBehaviour {
         countDownText.text = "";
         timeLimitText.text = "";
         scoreText.text = "";
+
+        scoreObject.SetActive(false);
+        timeLimitObject.SetActive(false);
+        timeLimitImage[0].sprite = common.count[3];
+        timeLimitImage[1].sprite = common.count[0];
+
         nowState = Status.Result;
         result.score = pumpkinCount;
 
@@ -180,16 +205,23 @@ public class GameStateManager : MonoBehaviour {
         if (timer < 0.0f && !onceResult) {
             onceResult = true;
             timeLimitText.text = "0";
+
+            timeLimitImage[1].sprite = common.count[0];
             GoResult();
             return;
         }
 
         int cnt = (int)timer + 1;
         timeLimitText.text = cnt.ToString();
+
+        timeLimitImage[0].sprite = common.count[cnt / 10];
+        timeLimitImage[1].sprite = common.count[cnt % 10];
     }
 
-    public void KillPumpkin(int cnt) {
+    public void KillPumpkin(int scoreNum,int cnt) {
         pumpkinCount += cnt;
+        addPumpkinScore.GenerateScoreImage(scoreNum);
+        addPumpkinScore.setTargetScoreImage(pumpkinCount);
     }
 
     public void GoGame() {

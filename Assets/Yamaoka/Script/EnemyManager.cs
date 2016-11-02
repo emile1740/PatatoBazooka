@@ -259,7 +259,7 @@ public class EnemyManager : SingletonMonoBehaviour<EnemyManager>
         
         //メッシュと点数を決める
         //上に書くとやばそうなので全て決めた後に書く
-        enem.SetMeshAndScore(pumpkinMeshes[type], pumpkinPoint[type], pumpkinParticles[type]);
+        enem.SetMeshAndScore(type, pumpkinMeshes[type], pumpkinPoint[type], pumpkinParticles[type]);
         //出現した種類が出にくくなるように比率調整
         typeCounter[type]++;
         //現在いる数としてカウント
